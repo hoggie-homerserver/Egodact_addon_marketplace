@@ -5,40 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Egodact Addon Marketplace</title>
   <style>
+    :root {
+      --egd-modal: #424242;
+      --egd-veld: #2e2e2e;
+      --egd-paneel: #333333;
+      --egd-rand: #555555;
+      --egd-lijn: #444444;
+      --egd-tekst: #ffffff;
+      --egd-tekst-zacht: #b0b0b0;
+      --egd-accent: #90caf9;
+      --egd-accent-tekst: #0d47a1;
+      --egd-schaduw: 0 11px 15px -7px rgba(0,0,0,.3), 0 24px 38px 3px rgba(0,0,0,.2);
+      --egd-backdrop: rgba(0,0,0,.65);
+      --egd-hover: rgba(144,202,249,.08);
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; }
-    .header { background: #16213e; padding: 20px 40px; border-bottom: 1px solid #0f3460; }
-    .header h1 { font-size: 24px; color: #e94560; display: flex; align-items: center; gap: 10px; }
-    .header h1 svg { width: 28px; height: 28px; }
-    .header p { color: #aaa; margin-top: 4px; }
-    .container { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
-    .search { width: 100%; padding: 12px 16px; border: 1px solid #0f3460; border-radius: 8px; background: #16213e; color: #eee; font-size: 14px; margin-bottom: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-    .card { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 20px; transition: transform 0.2s, box-shadow 0.2s; }
-    .card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .card-icon { width: 48px; height: 48px; border-radius: 10px; background: #0f3460; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #e94560; }
-    .card-icon svg { width: 24px; height: 24px; }
-    .card-name { font-size: 16px; font-weight: 600; }
-    .card-version { font-size: 12px; color: #888; }
-    .card-author { font-size: 12px; color: #aaa; margin-top: 2px; }
-    .card-desc { font-size: 13px; color: #ccc; line-height: 1.5; margin: 12px 0; }
-    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-    .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #0f3460; color: #aaa; }
-    .card-footer { display: flex; gap: 8px; align-items: center; }
-    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block; }
-    .btn-install { background: #e94560; color: #fff; }
-    .btn-install:hover { background: #c73650; }
-    .btn-source { background: transparent; color: #e94560; border: 1px solid #e94560; }
-    .badge { font-size: 10px; padding: 2px 8px; border-radius: 999px; background: #2e7d32; color: #fff; font-weight: bold; }
-    .empty { text-align: center; padding: 60px 20px; color: #888; }
-    .categories { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-    .cat-btn { padding: 6px 14px; border: 1px solid #0f3460; border-radius: 6px; background: #16213e; color: #ccc; cursor: pointer; font-size: 13px; }
-    .cat-btn.active { background: #e94560; color: #fff; border-color: #e94560; }
-    .submit-section { margin-top: 40px; padding: 24px; background: #16213e; border-radius: 12px; border: 1px solid #0f3460; }
-    .submit-section h2 { margin-bottom: 12px; color: #e94560; }
-    .submit-section p { color: #aaa; font-size: 14px; line-height: 1.6; }
-    .submit-section a { color: #e94560; }
+    body { font-family: Arial, sans-serif; background: var(--egd-veld); color: var(--egd-tekst); min-height: 100vh; }
+    .header { background: var(--egd-modal); padding: 16px 24px; border-bottom: 1px solid var(--egd-rand); display: flex; align-items: center; gap: 12px; }
+    .header h1 { font-size: 18px; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 10px; }
+    .header h1 svg { width: 22px; height: 22px; color: var(--egd-header-icoon, #fff); }
+    .header p { color: var(--egd-tekst-zacht); font-size: 13px; margin-left: auto; }
+    .container { max-width: 800px; margin: 0 auto; padding: 24px; }
+    .search { width: 100%; padding: 9px 12px; border: 1px solid var(--egd-rand); border-radius: 6px; background: var(--egd-paneel); color: var(--egd-tekst); font-size: 13px; font-family: inherit; margin-bottom: 16px; }
+    .search::placeholder { color: var(--egd-tekst-zacht); }
+    .categories { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+    .cat-btn { padding: 6px 12px; border: 1px solid var(--egd-rand); border-radius: 6px; background: var(--egd-paneel); color: var(--egd-tekst); cursor: pointer; font-size: 12px; font-family: inherit; font-weight: bold; }
+    .cat-btn.active { background: var(--egd-accent); color: var(--egd-accent-tekst); border-color: transparent; }
+    .cat-btn:hover:not(.active) { background: var(--egd-hover); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .card { background: var(--egd-paneel); border: 1px solid var(--egd-rand); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .card-header { display: flex; align-items: center; gap: 10px; }
+    .card-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--egd-veld); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--egd-tekst-zacht); border: 1px solid var(--egd-rand); }
+    .card-icon svg { width: 20px; height: 20px; }
+    .card-name { font-size: 14px; font-weight: bold; }
+    .card-version { font-size: 11px; color: var(--egd-tekst-zacht); }
+    .card-author { font-size: 11px; color: var(--egd-tekst-zacht); margin-top: 2px; }
+    .card-desc { font-size: 12px; color: var(--egd-tekst-zacht); line-height: 1.5; }
+    .card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: var(--egd-veld); color: var(--egd-tekst-zacht); border: 1px solid var(--egd-rand); }
+    .card-footer { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+    .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; text-decoration: none; display: inline-block; font-family: inherit; }
+    .btn-install { background: var(--egd-accent); color: var(--egd-accent-tekst); }
+    .btn-install:hover { opacity: 0.9; }
+    .btn-source { background: transparent; color: var(--egd-tekst); border: 1px solid var(--egd-rand); }
+    .btn-source:hover { background: var(--egd-hover); }
+    .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #2e7d32; color: #fff; font-weight: bold; }
+    .empty { text-align: center; padding: 40px 20px; color: var(--egd-tekst-zacht); font-size: 13px; }
+    .submit-section { margin-top: 32px; padding: 16px; background: var(--egd-paneel); border: 1px solid var(--egd-rand); border-radius: 8px; }
+    .submit-section h2 { margin-bottom: 8px; font-size: 15px; }
+    .submit-section p { color: var(--egd-tekst-zacht); font-size: 12px; line-height: 1.6; }
+    .submit-section a { color: var(--egd-accent); }
+    .submit-section code { background: var(--egd-veld); padding: 1px 4px; border-radius: 3px; font-size: 11px; }
   </style>
 </head>
 <body>
@@ -111,7 +128,7 @@
       if (!addons.length) { empty.style.display = 'block'; return; }
       empty.style.display = 'none';
 
-      const packageIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>';
+      const packageIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>';
 
       addons.forEach(addon => {
         const card = document.createElement('div');
