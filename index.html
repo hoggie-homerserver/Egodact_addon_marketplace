@@ -15,15 +15,13 @@
       --egd-tekst-zacht: #b0b0b0;
       --egd-accent: #90caf9;
       --egd-accent-tekst: #0d47a1;
-      --egd-schaduw: 0 11px 15px -7px rgba(0,0,0,.3), 0 24px 38px 3px rgba(0,0,0,.2);
-      --egd-backdrop: rgba(0,0,0,.65);
       --egd-hover: rgba(144,202,249,.08);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Arial, sans-serif; background: var(--egd-veld); color: var(--egd-tekst); min-height: 100vh; }
     .header { background: var(--egd-modal); padding: 16px 24px; border-bottom: 1px solid var(--egd-rand); display: flex; align-items: center; gap: 12px; }
     .header h1 { font-size: 18px; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 10px; }
-    .header h1 svg { width: 22px; height: 22px; color: var(--egd-header-icoon, #fff); }
+    .header h1 svg { width: 22px; height: 22px; }
     .header p { color: var(--egd-tekst-zacht); font-size: 13px; margin-left: auto; }
     .container { max-width: 800px; margin: 0 auto; padding: 24px; }
     .search { width: 100%; padding: 9px 12px; border: 1px solid var(--egd-rand); border-radius: 6px; background: var(--egd-paneel); color: var(--egd-tekst); font-size: 13px; font-family: inherit; margin-bottom: 16px; }
@@ -51,32 +49,12 @@
     .btn-source:hover { background: var(--egd-hover); }
     .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #2e7d32; color: #fff; font-weight: bold; }
     .empty { text-align: center; padding: 40px 20px; color: var(--egd-tekst-zacht); font-size: 13px; }
-    .submit-section { margin-top: 32px; padding: 20px; background: var(--egd-paneel); border: 1px solid var(--egd-rand); border-radius: 8px; }
-    .submit-section h2 { margin: 0 0 6px; font-size: 16px; font-weight: 600; display:flex; align-items:center; gap:8px; }
-    .submit-section p, .submit-section li { color: var(--egd-tekst-zacht); font-size: 12.5px; line-height: 1.6; }
-    .submit-section a { color: var(--egd-accent); }
-    .submit-section code { background: var(--egd-veld); padding: 1px 5px; border-radius: 4px; font-size: 11px; color: var(--egd-tekst); border:1px solid var(--egd-rand); }
-    .dev-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 14px 0; }
-    .dev-step { background: var(--egd-veld); border: 1px solid var(--egd-rand); border-radius: 8px; padding: 12px; }
-    .dev-step strong { display:block; color: var(--egd-tekst); font-size: 13px; margin-bottom: 4px; }
-    .dev-step .num { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background: var(--egd-accent); color: var(--egd-accent-tekst); font-weight:bold; font-size:12px; margin-right:6px; }
-    .generator { margin-top: 16px; padding: 14px; background: var(--egd-veld); border: 1px solid var(--egd-rand); border-radius: 8px; }
-    .generator h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--egd-tekst); }
-    .form-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
-    .field { display:flex; flex-direction:column; gap:4px; }
-    .field label { font-size: 11px; color: var(--egd-tekst-zacht); }
-    .field input, .field textarea, .field select { width:100%; padding:8px 10px; border:1px solid var(--egd-rand); border-radius:6px; background: var(--egd-paneel); color: var(--egd-tekst); font: inherit; font-size:12.5px; }
-    .field textarea { min-height: 70px; resize: vertical; font-family: ui-monospace, Consolas, monospace; }
-    .actions-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center; }
-    .btn-primary { background: var(--egd-accent); color: var(--egd-accent-tekst); border:none; }
-    .btn-primary:hover { opacity:.92; }
-    .btn-ghost { background: transparent; color: var(--egd-tekst); border:1px solid var(--egd-rand); }
-    .btn-ghost:hover { background: var(--egd-hover); }
-    .output { margin-top: 10px; }
-    .output pre { margin:0; padding:12px; background: var(--egd-paneel); border:1px solid var(--egd-rand); border-radius:6px; color: var(--egd-tekst); font-size:11.5px; line-height:1.5; overflow:auto; max-height:260px; white-space:pre-wrap; word-break:break-word; }
-    .note { margin-top:8px; font-size:11.5px; color: var(--egd-tekst-zacht); }
-    .pill-link { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--egd-rand); border-radius:999px; color: var(--egd-accent); text-decoration:none; font-size:12px; font-weight:bold; background: var(--egd-veld); }
-    .pill-link:hover { background: var(--egd-hover); }
+    .dev-cta { margin-top: 28px; padding: 18px 20px; background: var(--egd-paneel); border: 1px solid var(--egd-rand); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .dev-cta h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+    .dev-cta p { font-size: 12.5px; color: var(--egd-tekst-zacht); margin: 0; line-height: 1.5; }
+    .dev-cta .text { flex: 1; min-width: 220px; }
+    .btn-dev { background: var(--egd-accent); color: var(--egd-accent-tekst); border: none; border-radius: 6px; padding: 10px 16px; font-size: 13px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .btn-dev:hover { opacity: .92; }
   </style>
 </head>
 <body>
@@ -92,63 +70,16 @@
     <div class="categories" id="categories"></div>
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty" style="display:none;">Geen addons gevonden.</div>
-    
-    <div class="submit-section" id="developer">
-      <h2>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--egd-accent)"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/><path d="M14 4l-4 16"/></svg>
-        Ontwikkelaars: addon aanmelden &amp; publiceren
-      </h2>
-      <p>Iedereen kan een addon maken. Publiceren gaat via GitHub (gratis, geen apart account/backend nodig): je meldt je addon aan met een pull request naar de registry. Na review verschijnt hij in de marketplace (en kan, na controle, als <strong>Official</strong> gemarkeerd worden).</p>
 
-      <div class="dev-grid">
-        <div class="dev-step"><strong><span class="num">1</span>Bouw je addon</strong>Maak een GitHub-repo met je addonbestanden (minimaal o.a. <code>sdk.js</code>, <code>lib.js</code> en je entry, zoals <code>content.js</code>) en een werkende manifest/structuur. Test lokaal via "Addon valideren".</div>
-        <div class="dev-step"><strong><span class="num">2</span>Maak je aanmelding</strong>Fork <a href="https://github.com/hoggie-homerserver/Egodact_addon_marketplace" target="_blank" rel="noopener">de registry-repo</a> en voeg je addon toe aan <code>registry.json</code> (id, naam, auteur, versie, repo, branch, <code>files</code>-volgorde, entry, sha256, tags/categorie).</div>
-        <div class="dev-step"><strong><span class="num">3</span>Dien in (sign-up)</strong>Open een pull request met je wijziging. Dat is je aanmelding/sign-up voor de marketplace. De maintainer controleert de addon (veiligheid/kwaliteit) en voegt hem toe.</div>
-        <div class="dev-step"><strong><span class="num">4</span>Updates</strong>Nieuwe versie? Update <code>version</code>, <code>files</code> en <code>sha256</code> in <code>registry.json</code> via een nieuwe PR; geinstalleerde addons worden dan bijgewerkt.</div>
+    <div class="dev-cta">
+      <div class="text">
+        <h2>Wil je zelf een addon maken?</h2>
+        <p>Publiceer je eigen addon op de marketplace. Je kunt beginnen met de <strong>Example Addon</strong> als startpunt.</p>
       </div>
-
-      <div class="actions-row">
-        <a class="pill-link" href="https://github.com/hoggie-homerserver/Egodact_addon_marketplace/fork" target="_blank" rel="noopener">Fork registry (aanmelden)</a>
-        <a class="pill-link" href="https://github.com/hoggie-homerserver/Egodact_addon_marketplace/issues/new?title=Addon%20aanmelding:%20%5Bnaam%5D&amp;body=Beschrijf%20je%20addon%20en%20link%20naar%20de%20repo.%0A%0ARepo:%20%0AVersie:%20%0ACategorie:%20%0A" target="_blank" rel="noopener">Meld aan via issue</a>
-        <a class="pill-link" href="https://github.com/hoggie-homerserver/Egodact_addon_marketplace/blob/main/registry.json" target="_blank" rel="noopener">Bekijk registry.json</a>
-      </div>
-
-      <div class="generator">
-        <h3>Registry-vermelding genereren</h3>
-        <p class="note" style="margin-top:0;margin-bottom:10px;">Vul je gegevens in en kopieer het JSON-object in <code>registry.json</code> (in de <code>addons</code>-lijst). <code>files</code> is de exacte laadvolgorde.</p>
-        <div class="form-grid">
-          <div class="field"><label for="g-id">ID (uniek, bijv. egodact-mijn-addon)</label><input id="g-id" placeholder="egodact-mijn-addon"></div>
-          <div class="field"><label for="g-name">Naam</label><input id="g-name" placeholder="Mijn Addon"></div>
-          <div class="field"><label for="g-author">Auteur</label><input id="g-author" placeholder="Jouw naam of GitHub"></div>
-          <div class="field"><label for="g-version">Versie</label><input id="g-version" placeholder="1.0.0" value="1.0.0"></div>
-          <div class="field"><label for="g-repo">GitHub repo URL</label><input id="g-repo" placeholder="https://github.com/user/repo"></div>
-          <div class="field"><label for="g-branch">Branch (optioneel, bijv. main/master)</label><input id="g-branch" placeholder="main"></div>
-          <div class="field"><label for="g-category">Categorie</label>
-            <select id="g-category">
-              <option value="communicatie">Communicatie</option>
-              <option value="productiviteit">Productiviteit</option>
-              <option value="games">Spellen</option>
-              <option value="tools" selected>Tools</option>
-            </select>
-          </div>
-          <div class="field"><label for="g-tags">Tags (komma-gescheiden)</label><input id="g-tags" placeholder="voorbeeld, tool"></div>
-        </div>
-        <div class="form-grid" style="margin-top:10px;">
-          <div class="field"><label for="g-desc">Beschrijving</label><input id="g-desc" placeholder="Korte beschrijving van je addon"></div>
-          <div class="field"><label for="g-entry">Entry point</label><input id="g-entry" placeholder="content.js" value="content.js"></div>
-          <div class="field"><label for="g-sha">SHA256 (optioneel, van release/zip)</label><input id="g-sha" placeholder="laat leeg als onbekend"></div>
-        </div>
-        <div class="field" style="margin-top:10px;"><label for="g-files">Bestanden in laadvolgorde (een per regel)</label><textarea id="g-files">sdk.js
-lib.js
-content.js</textarea></div>
-        <div class="actions-row">
-          <button class="btn btn-primary" id="g-generate" type="button">Genereer vermelding</button>
-          <button class="btn btn-ghost" id="g-copy" type="button">Kopieer JSON</button>
-          <a class="btn btn-ghost" id="g-pr" href="https://github.com/hoggie-homerserver/Egodact_addon_marketplace/compare" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;">Open PR-pagina</a>
-        </div>
-        <div class="output"><pre id="g-output">Vul de velden in en klik op "Genereer vermelding".</pre></div>
-        <p class="note">Vereisten (kort): unieke <code>id</code>, geldige <code>repo</code>, correcte <code>files</code>-volgorde (dependencies/eigen <code>sdk.js</code>/<code>lib.js</code> mee als nodig), werkende addon op app.egodact.com. De maintainer bepaalt verificatie/"Official".</p>
-      </div>
+      <a class="btn-dev" href="developer.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/></svg>
+        Become a developer
+      </a>
     </div>
   </div>
 
@@ -163,7 +94,7 @@ content.js</textarea></div>
         renderCategories();
         renderAddons();
       } catch (err) {
-        document.getElementById('grid').innerHTML = '<div class="empty">Kon registry niet laden: ' + err.message + '</div>';
+        document.getElementById('grid').innerHTML = '<div class="empty">Kon registry niet laden: ' + escapeHtml(err.message) + '</div>';
       }
     }
 
@@ -189,10 +120,10 @@ content.js</textarea></div>
       const grid = document.getElementById('grid');
       const empty = document.getElementById('empty');
       grid.innerHTML = '';
-      
+
       let addons = (registry.addons || []).slice();
       if (activeCategory !== 'all') addons = addons.filter(a => a.category === activeCategory);
-      if (query) addons = addons.filter(a => 
+      if (query) addons = addons.filter(a =>
         (a.name || '').toLowerCase().includes(query) ||
         (a.description || '').toLowerCase().includes(query) ||
         (a.tags || []).some(t => t.toLowerCase().includes(query))
@@ -219,8 +150,8 @@ content.js</textarea></div>
           <div class="card-desc">${escapeHtml(addon.description || '')}</div>
           <div class="card-tags">${(addon.tags || []).map(t => '<span class="tag">' + escapeHtml(t) + '</span>').join('')}</div>
           <div class="card-footer">
-            <a class="btn btn-install" href="${escapeHtml(addon.repo)}" target="_blank">Installeren</a>
-            <a class="btn btn-source" href="${escapeHtml(addon.repo)}" target="_blank">Broncode</a>
+            <a class="btn btn-install" href="${escapeHtml(addon.repo)}" target="_blank" rel="noopener">Installeren</a>
+            <a class="btn btn-source" href="${escapeHtml(addon.repo)}" target="_blank" rel="noopener">Broncode</a>
           </div>
         `;
         grid.appendChild(card);
@@ -232,47 +163,6 @@ content.js</textarea></div>
     }
 
     document.getElementById('search').addEventListener('input', renderAddons);
-
-    function generateEntry() {
-      var val = function(id){ var el=document.getElementById(id); return el ? String(el.value||'').trim() : ''; };
-      var files = val('g-files').split(/\r?\n/).map(function(s){ return s.trim(); }).filter(Boolean);
-      var tags = val('g-tags').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
-      var entry = {
-        id: val('g-id') || 'egodact-mijn-addon',
-        name: val('g-name') || 'Mijn Addon',
-        author: val('g-author') || 'Onbekend',
-        description: val('g-desc') || '',
-        version: val('g-version') || '1.0.0',
-        repo: val('g-repo') || 'https://github.com/user/repo',
-        files: files.length ? files : ['sdk.js','lib.js','content.js'],
-        entryPoint: val('g-entry') || 'content.js',
-        verified: false,
-        category: val('g-category') || 'tools',
-        tags: tags
-      };
-      var branch = val('g-branch');
-      if (branch) entry.branch = branch;
-      var sha = val('g-sha');
-      if (sha) entry.sha256 = sha;
-      var json = JSON.stringify(entry, null, 2);
-      document.getElementById('g-output').textContent = json;
-      return json;
-    }
-
-    var genBtn=document.getElementById('g-generate');
-    var copyBtnG=document.getElementById('g-copy');
-    if (genBtn) genBtn.addEventListener('click', generateEntry);
-    if (copyBtnG) copyBtnG.addEventListener('click', function(){
-      var json = generateEntry();
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(json).then(function(){
-          copyBtnG.textContent='Gekopieerd'; setTimeout(function(){ copyBtnG.textContent='Kopieer JSON'; }, 1400);
-        }).catch(function(){ alert('Kopieren mislukt. Selecteer en kopieer de JSON handmatig.'); });
-      } else {
-        alert('Kopieren niet beschikbaar. Selecteer en kopieer de JSON handmatig.');
-      }
-    });
-
     loadRegistry();
   </script>
 </body>
