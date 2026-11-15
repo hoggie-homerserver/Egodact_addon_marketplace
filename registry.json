@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "updatedAt": "2026-11-15",
   "addons": [
     {
@@ -10,9 +10,23 @@
       "version": "1.0.7",
       "repo": "https://github.com/hoggie-homerserver/Egodact_addon_chat",
       "downloadUrl": "https://github.com/hoggie-homerserver/Egodact_addon_chat/releases/latest/download/addon.zip",
-      "files": ["content.js", "js/transport.js", "js/store.js", "js/identity.js", "js/directory.js", "config.js"],
+      "files": [
+        "vendor/firebase-app-compat.js",
+        "vendor/firebase-auth-compat.js",
+        "vendor/firebase-firestore-compat.js",
+        "config.js",
+        "js/store.js",
+        "js/identity.js",
+        "js/directory.js",
+        "js/blobstore.js",
+        "js/transport.js",
+        "js/emoji-data.js",
+        "vendor/emoji-picker.js",
+        "js/ui.js",
+        "content.js"
+      ],
       "entryPoint": "content.js",
-      "sha256": "a8f24d24d8bf",
+      "sha256": "a8f24d24d8bf60ffa8f5f6594852f9eec224ba62cbbc4eacaec9dd77dbac5ac6",
       "verified": true,
       "category": "communicatie",
       "tags": ["chat", "berichten", "groepen"]
@@ -25,7 +39,15 @@
       "version": "0.1.6",
       "repo": "https://github.com/hoggie-homerserver/Egodact_addon_group_project",
       "downloadUrl": "https://github.com/hoggie-homerserver/Egodact_addon_group_project/releases/latest/download/addon.zip",
-      "files": ["content.js", "js/transport.js", "js/store.js"],
+      "files": [
+        "vendor/firebase-app-compat.js",
+        "vendor/firebase-auth-compat.js",
+        "vendor/firebase-firestore-compat.js",
+        "config.js",
+        "js/store.js",
+        "js/transport.js",
+        "content.js"
+      ],
       "entryPoint": "content.js",
       "sha256": "8b69ef7ab82b34249e7622cef043da0377aed50dce781602a12eb467f00a9685",
       "verified": true,
