@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Review - Egodact Addon Marketplace</title>
+  <style>
+    :root { --egd-modal:#424242; --egd-veld:#2e2e2e; --egd-paneel:#333333; --egd-rand:#555; --egd-lijn:#444; --egd-tekst:#fff; --egd-tekst-zacht:#b0b0b0; --egd-accent:#90caf9; --egd-accent-tekst:#0d47a1; --egd-hover:rgba(144,202,249,.08); --goed:#66bb6a; --fout:#ef5350; --warn:#ffb74d; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;background:var(--egd-veld);color:var(--egd-tekst);min-height:100vh}
+    .header{background:var(--egd-modal);padding:14px 20px;border-bottom:1px solid var(--egd-rand);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .header h1{font-size:17px;font-weight:500;margin:0;display:flex;align-items:center;gap:8px}
+    .header .spacer{margin-left:auto}
+    .header a{color:var(--egd-accent);text-decoration:none;font-size:13px;font-weight:bold}
+    .container{max-width:980px;margin:0 auto;padding:20px}
+    .card{background:var(--egd-paneel);border:1px solid var(--egd-rand);border-radius:8px;padding:16px;margin-bottom:14px}
+    h2{font-size:16px;margin:0 0 8px;font-weight:600}
+    h3{font-size:14px;margin:0 0 8px;font-weight:600}
+    p,.muted{color:var(--egd-tekst-zacht);font-size:13px;line-height:1.6}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    .field{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+    label{font-size:11.5px;color:var(--egd-tekst-zacht)}
+    input,textarea,select{width:100%;padding:9px 10px;border:1px solid var(--egd-rand);border-radius:6px;background:var(--egd-veld);color:var(--egd-tekst);font:inherit;font-size:13px}
+    textarea{min-height:80px;resize:vertical;font-family:ui-monospace,Consolas,monospace}
+    .btn{padding:9px 14px;border-radius:6px;border:1px solid var(--egd-rand);background:var(--egd-veld);color:var(--egd-tekst);cursor:pointer;font:inherit;font-size:13px;font-weight:bold}
+    .btn:hover{border-color:var(--egd-accent)}
+    .btn.primary{background:var(--egd-accent);color:var(--egd-accent-tekst);border-color:transparent}
+    .btn.good{background:#2e7d32;color:#fff;border-color:transparent}
+    .btn.bad{background:#7f1d1d;color:#fff;border-color:#b71c1c}
+    .btn.ghost{background:transparent}
+    .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:bold}
+    .b-pending{background:#5d4037;color:#ffe0b2}
+    .b-approved,.b-ok{background:#2e7d32;color:#fff}
+    .b-rejected{background:#7f1d1d;color:#fff}
+    .item{border:1px solid var(--egd-rand);border-radius:8px;padding:12px;background:var(--egd-veld);margin-top:10px}
+    .item-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .item-title{font-weight:bold;font-size:14px}
+    .msg{font-size:13px;margin-top:8px}
+    .msg.err{color:var(--fout)} .msg.ok{color:var(--goed)}
+    .hidden{display:none !important}
+    code{background:var(--egd-modal);padding:1px 5px;border-radius:4px;font-size:11.5px;border:1px solid var(--egd-rand)}
+    hr{border:none;border-top:1px solid var(--egd-rand);margin:14px 0}
+    .hint{font-size:12px;color:var(--egd-tekst-zacht);margin-top:6px}
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin review</h1>
+    <span class="spacer"></span>
+    <a href="index.html">Marketplace</a>
+    <a href="portal.html">Developer Portal</a>
+  </div>
+  <div class="container">
+    <div id="cfgWarn" class="card hidden"><h2>Firebase nog niet ingesteld</h2><p>Vul <code>firebase-config.js</code> in om inzendingen te beoordelen en te publiceren.</p></div>
+
+    <div id="authCard" class="card">
+      <h2>Maintainer login</h2>
+      <p>Log in met een maintainer-account (UID/e-mail in <code>firebase-config.js</code> of aanwezig in <code>admins/{uid}</code>). Alleen maintainers kunnen goedkeuren en publiceren.</p>
+      <div class="grid" style="margin-top:10px;">
+        <div class="card" style="margin:0;background:var(--egd-veld)">
+          <h3>E-mail &amp; wachtwoord</h3>
+          <div class="field"><label for="email">E-mail</label><input id="email" type="email"></div>
+          <div class="field"><label for="pass">Wachtwoord</label><input id="pass" type="password"></div>
+          <div class="row" style="margin-top:10px;"><button class="btn primary" id="loginBtn">Inloggen</button></div>
+        </div>
+        <div class="card" style="margin:0;background:var(--egd-veld)">
+          <h3>Google</h3>
+          <div class="row" style="margin-top:10px;"><button class="btn" id="googleBtn">Inloggen met Google</button></div>
+        </div>
+      </div>
+      <div id="authMsg" class="msg"></div>
+    </div>
+
+    <div id="userBar" class="card hidden">
+      <div class="row" style="justify-content:space-between;">
+        <div><strong id="userEmail"></strong> <span id="roleInfo" class="badge b-pending">controleren...</span></div>
+        <div class="row"><button class="btn" id="refreshBtn">Vernieuwen</button><button class="btn" id="logoutBtn">Uitloggen</button></div>
+      </div>
+      <div id="denyMsg" class="msg err hidden">Geen maintainer-rechten. Voeg je UID/e-mail toe aan <code>firebase-config.js</code> (MAINTAINER_UIDS/MAINTAINER_EMAILS) of maak <code>admins/{jouwUid}</code> in Firestore.</div>
+    </div>
+
+    <div id="adminCard" class="card hidden">
+      <h2>Inzendingen beoordelen (easy add)</h2>
+      <p><strong>Goedkeuren &amp; publiceren</strong> plaatst de addon direct in <code>published/{addonId}</code>, waardoor hij zichtbaar wordt in de marketplace op de website en in de extensie (samengevoegd met de officiële registry). Afwijzen houdt hem uit de marketplace.</p>
+      <div class="row" style="margin:10px 0;">
+        <button class="btn" data-filter="pending">Pending</button>
+        <button class="btn" data-filter="approved">Goedgekeurd</button>
+        <button class="btn" data-filter="rejected">Afgewezen</button>
+        <button class="btn" data-filter="all">Alles</button>
+      </div>
+      <div id="list"><p class="muted">Laden...</p></div>
+    </div>
+  </div>
+
+
+<script src="firebase-app-compat.js"></script>
+<script src="firebase-auth-compat.js"></script>
+<script src="firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+  var F = window.EgodactMarketplaceFirebase || {};
+  var cfg = F.config || {};
+  function configured(){ return cfg.apiKey && cfg.apiKey !== 'PASTE_API_KEY' && cfg.projectId && cfg.projectId !== 'PASTE_PROJECT_ID'; }
+  window.MP = window.MP || {};
+  MP.configured = configured;
+  MP.config = F;
+  MP.app = null; MP.auth = null; MP.db = null; MP.ready = null;
+  MP.init = function(){
+    if (!configured()) return Promise.resolve(false);
+    try {
+      var name = 'egodact-marketplace-portal';
+      var existing = firebase.apps.find(function(a){return a.name===name;});
+      MP.app = existing || firebase.initializeApp(cfg, name);
+      MP.auth = firebase.auth(MP.app);
+      MP.db = firebase.firestore(MP.app);
+      return Promise.resolve(true);
+    } catch(e){ console.warn('Firebase init failed', e); return Promise.resolve(false); }
+  };
+  MP.isMaintainer = async function(user){
+    if(!user) return false;
+    var C = MP.config || {};
+    if ((C.MAINTAINER_UIDS||[]).indexOf(user.uid) !== -1) return true;
+    if (user.email && (C.MAINTAINER_EMAILS||[]).map(function(x){return String(x||'').toLowerCase();}).indexOf(String(user.email).toLowerCase()) !== -1) return true;
+    try {
+      var doc = await MP.db.collection('admins').doc(user.uid).get();
+      return doc.exists;
+    } catch(e){ return false; }
+  };
+  MP.ready = MP.init();
+})();
+</script>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var msg = function(el, text, cls){ el.className = 'msg ' + (cls||''); el.textContent = text || ''; };
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  var currentFilter = 'pending';
+  var isAdmin = false;
+
+  MP.ready.then(function(ok){
+    if(!ok){ $('cfgWarn').classList.remove('hidden'); return; }
+    MP.auth.onAuthStateChanged(async function(user){
+      var on = !!user;
+      $('authCard').classList.toggle('hidden', on);
+      $('userBar').classList.toggle('hidden', !on);
+      $('adminCard').classList.add('hidden');
+      $('denyMsg').classList.add('hidden');
+      if(on){
+        $('userEmail').textContent = (user.email || '(ingelogd)') + ' · uid: ' + user.uid;
+        $('roleInfo').textContent = 'controleren...'; $('roleInfo').className='badge b-pending';
+        isAdmin = await MP.isMaintainer(user);
+        if(isAdmin){
+          $('roleInfo').textContent = 'Maintainer'; $('roleInfo').className='badge b-ok';
+          $('adminCard').classList.remove('hidden');
+          loadList();
+        } else {
+          $('roleInfo').textContent = 'Geen toegang'; $('roleInfo').className='badge b-rejected';
+          $('denyMsg').classList.remove('hidden');
+        }
+      } else { isAdmin = false; }
+    });
+  });
+
+  $('loginBtn').onclick = function(){ MP.ready.then(function(ok){ if(!ok) return; MP.auth.signInWithEmailAndPassword(($('email').value||'').trim(), ($('pass').value||'')).then(function(){}).catch(function(e){ msg($('authMsg'), e.message, 'err'); }); }); };
+  $('googleBtn').onclick = function(){ MP.ready.then(function(ok){ if(!ok) return; var p = new firebase.auth.GoogleAuthProvider(); MP.auth.signInWithPopup(p).catch(function(e){ msg($('authMsg'), e.message, 'err'); }); }); };
+  $('logoutBtn').onclick = function(){ if(MP.auth) MP.auth.signOut(); };
+  $('refreshBtn').onclick = function(){ if(isAdmin) loadList(); };
+  document.querySelectorAll('[data-filter]').forEach(function(b){ b.onclick = function(){ currentFilter = b.getAttribute('data-filter'); loadList(); }; });
+
+  function badge(status){ var c=status==='approved'?'b-approved':(status==='rejected'?'b-rejected':'b-pending'); var t=status==='approved'?'Goedgekeurd':(status==='rejected'?'Afgewezen':'Pending'); return '<span class="badge '+c+'">'+t+'</span>'; }
+
+  async function loadList(){
+    var list = $('list'); list.innerHTML = '<p class="muted">Laden...</p>';
+    try {
+      var q = MP.db.collection('submissions');
+      if(currentFilter !== 'all') q = q.where('status','==',currentFilter);
+      var snap = await q.get();
+      var docs=[]; snap.forEach(function(d){ docs.push({id:d.id, data:d.data()}); });
+      docs.sort(function(a,b){ var ta=(a.data.updatedAt&&a.data.updatedAt.seconds)||(a.data.createdAt&&a.data.createdAt.seconds)||0, tb=(b.data.updatedAt&&b.data.updatedAt.seconds)||(b.data.createdAt&&b.data.createdAt.seconds)||0; return tb-ta; });
+      if(!docs.length){ list.innerHTML = '<p class="muted">Geen inzendingen.</p>'; return; }
+      list.innerHTML = '';
+      docs.forEach(function(d){ list.appendChild(renderItem(d)); });
+    } catch(e){ list.innerHTML = '<p class="msg err">'+esc(e.message)+'</p><p class="hint">Als dit een index/permission-fout is: controleer Firestore rules en maak indien nodig een index voor submissions (status + updatedAt/createdAt).</p>'; }
+  }
+
+  function renderItem(d){
+    var s=d.data||{}, a=s.addon||{};
+    var el=document.createElement('div'); el.className='item';
+    var files=(a.files||[]).join(', ');
+    var tags=(a.tags||[]).join(', ');
+    el.innerHTML = '<div class="item-head"><span class="item-title">'+esc(a.name||a.id||'(naamloos)')+'</span> '+badge(s.status)+' <span class="muted" style="font-size:11px">v'+esc(a.version||'?')+'</span></div>'+
+      '<div class="muted" style="font-size:12px;margin-top:4px">id: <code>'+esc(a.id||'')+'</code> · auteur: '+esc(a.author||'')+' · dev: '+esc(s.ownerEmail||s.ownerUid||'')+'</div>'+
+      '<div class="hint" style="margin-top:6px">'+esc(a.description||'')+'</div>'+
+      '<div class="hint">Repo: <a href="'+esc(a.repo||'#')+'" target="_blank" rel="noopener">'+esc(a.repo||'')+'</a> '+(a.branch?' · branch: <code>'+esc(a.branch)+'</code>':'')+' · entry: <code>'+esc(a.entryPoint||'')+'</code></div>'+
+      '<div class="hint">Categorie: '+esc(a.category||'')+' · tags: '+esc(tags||'-')+'</div>'+
+      '<div class="hint">Files: <code>'+esc(files||'(geen)')+'</code></div>'+
+      (s.reviewNote?'<div class="hint"><strong>Huidige feedback:</strong> '+esc(s.reviewNote)+'</div>':'')+
+      '<div class="field"><label>Feedback / reden (optioneel, zichtbaar voor dev)</label><input data-note="'+esc(d.id)+'" value="'+esc(s.reviewNote||'')+'"></div>'+
+      '<div class="row" style="margin-top:10px;"><button class="btn good" data-act="approve" data-id="'+esc(d.id)+'">Goedkeuren &amp; publiceren</button><button class="btn bad" data-act="reject" data-id="'+esc(d.id)+'">Afwijzen</button><button class="btn" data-act="unpublish" data-id="'+esc(d.id)+'">Uit marketplace halen</button></div>'+
+      '<div class="msg" data-msg="'+esc(d.id)+'"></div>';
+
+    function noteVal(){ var n=el.querySelector('[data-note="'+d.id+'"]'); return n ? (n.value||'').trim() : ''; }
+    el.querySelector('[data-act="approve"]').onclick = async function(){ await approve(d, noteVal(), el); };
+    el.querySelector('[data-act="reject"]').onclick = async function(){ await reject(d, noteVal(), el); };
+    el.querySelector('[data-act="unpublish"]').onclick = async function(){ await unpublish(d, noteVal(), el); };
+    return el;
+  }
+
+  function publishedDoc(addon, sub){
+    var a = Object.assign({}, addon);
+    a.verified = false;
+    return {
+      id: a.id, name: a.name, author: a.author || 'Onbekend', description: a.description || '',
+      version: a.version || '1.0.0', repo: a.repo, branch: a.branch || null, files: a.files || [],
+      entryPoint: a.entryPoint || 'content.js', sha256: a.sha256 || null, category: a.category || 'tools',
+      tags: a.tags || [], verified: false, source: 'firestore',
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp(), submissionId: sub.id, ownerEmail: sub.data.ownerEmail || null
+    };
+  }
+
+  async function approve(d, note, el){
+    var s=d.data||{}, a=s.addon||{}; var m=el.querySelector('[data-msg="'+d.id+'"]');
+    if(!a.id || !a.repo || !(a.files||[]).length){ m.className='msg err'; m.textContent='Ongeldige addon (id/repo/files ontbreken).'; return; }
+    try {
+      await MP.db.collection('published').doc(a.id).set(publishedDoc(a, d), {merge:true});
+      await MP.db.collection('submissions').doc(d.id).set({status:'approved', reviewNote: note||null, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+      m.className='msg ok'; m.textContent='Goedgekeurd en gepubliceerd in marketplace (website + extensie).'; setTimeout(loadList, 600);
+    } catch(e){ m.className='msg err'; m.textContent=e.message; }
+  }
+
+  async function reject(d, note, el){
+    var m=el.querySelector('[data-msg="'+d.id+'"]');
+    try {
+      await MP.db.collection('submissions').doc(d.id).set({status:'rejected', reviewNote: note||null, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+      m.className='msg ok'; m.textContent='Afgewezen.'; setTimeout(loadList, 600);
+    } catch(e){ m.className='msg err'; m.textContent=e.message; }
+  }
+
+  async function unpublish(d, note, el){
+    var s=d.data||{}, a=s.addon||{}; var m=el.querySelector('[data-msg="'+d.id+'"]');
+    try {
+      if(a.id) await MP.db.collection('published').doc(a.id).delete();
+      await MP.db.collection('submissions').doc(d.id).set({status:'rejected', reviewNote: note||'Uit marketplace gehaald', updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+      m.className='msg ok'; m.textContent='Uit marketplace gehaald (published verwijderd).'; setTimeout(loadList, 600);
+    } catch(e){ m.className='msg err'; m.textContent=e.message; }
+  }
+})();
+</script>
+</body>
+</html>

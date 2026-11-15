@@ -6,23 +6,17 @@
   <title>Egodact Addon Marketplace</title>
   <style>
     :root {
-      --egd-modal: #424242;
-      --egd-veld: #2e2e2e;
-      --egd-paneel: #333333;
-      --egd-rand: #555555;
-      --egd-lijn: #444444;
-      --egd-tekst: #ffffff;
-      --egd-tekst-zacht: #b0b0b0;
-      --egd-accent: #90caf9;
-      --egd-accent-tekst: #0d47a1;
-      --egd-hover: rgba(144,202,249,.08);
+      --egd-modal: #424242; --egd-veld: #2e2e2e; --egd-paneel: #333333; --egd-rand: #555555; --egd-lijn: #444444;
+      --egd-tekst: #ffffff; --egd-tekst-zacht: #b0b0b0; --egd-accent: #90caf9; --egd-accent-tekst: #0d47a1; --egd-hover: rgba(144,202,249,.08);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Arial, sans-serif; background: var(--egd-veld); color: var(--egd-tekst); min-height: 100vh; }
-    .header { background: var(--egd-modal); padding: 16px 24px; border-bottom: 1px solid var(--egd-rand); display: flex; align-items: center; gap: 12px; }
+    .header { background: var(--egd-modal); padding: 16px 24px; border-bottom: 1px solid var(--egd-rand); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .header h1 { font-size: 18px; font-weight: 500; margin: 0; display: flex; align-items: center; gap: 10px; }
     .header h1 svg { width: 22px; height: 22px; }
-    .header p { color: var(--egd-tekst-zacht); font-size: 13px; margin-left: auto; }
+    .header p { color: var(--egd-tekst-zacht); font-size: 13px; }
+    .header .nav { margin-left: auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .header .nav a { color: var(--egd-accent); text-decoration: none; font-size: 13px; font-weight: bold; }
     .container { max-width: 800px; margin: 0 auto; padding: 24px; }
     .search { width: 100%; padding: 9px 12px; border: 1px solid var(--egd-rand); border-radius: 6px; background: var(--egd-paneel); color: var(--egd-tekst); font-size: 13px; font-family: inherit; margin-bottom: 16px; }
     .search::placeholder { color: var(--egd-tekst-zacht); }
@@ -63,7 +57,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       Egodact Addon Marketplace
     </h1>
-    <p>Ontdek en installeer addons voor de Egodact Smart extensie</p>
+    <p>Ontdek en installeer addons</p>
+    <div class="nav">
+      <a href="portal.html">Developer Portal</a>
+      <a href="admin.html">Admin</a>
+    </div>
   </div>
   <div class="container">
     <input type="text" class="search" id="search" placeholder="Zoek addons...">
@@ -74,23 +72,53 @@
     <div class="dev-cta">
       <div class="text">
         <h2>Wil je zelf een addon maken?</h2>
-        <p>Publiceer je eigen addon op de marketplace. Je kunt beginnen met de <strong>Example Addon</strong> als startpunt.</p>
+        <p>Dien je addon in via het <strong>Developer Portal</strong>: vul het formulier in en na goedkeuring verschijnt hij in de marketplace. Begin makkelijk met de <strong>Example Addon</strong>.</p>
       </div>
-      <a class="btn-dev" href="developer.html">
+      <a class="btn-dev" href="portal.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/></svg>
         Become a developer
       </a>
     </div>
   </div>
 
+  <script src="firebase-app-compat.js"></script>
+  <script src="firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script>
     let registry = null;
     let activeCategory = 'all';
 
+    async function fetchPublished() {
+      try {
+        var F = window.EgodactMarketplaceFirebase || {};
+        var cfg = F.config || {};
+        if (!cfg.apiKey || cfg.apiKey === 'PASTE_API_KEY' || !cfg.projectId || cfg.projectId === 'PASTE_PROJECT_ID') return [];
+        var name = 'egodact-marketplace-web';
+        var existing = firebase.apps.find(function(a){return a.name===name;});
+        var app = existing || firebase.initializeApp(cfg, name);
+        var db = firebase.firestore(app);
+        var snap = await db.collection('published').get();
+        var out = [];
+        snap.forEach(function(doc){ var d = doc.data() || {}; d.id = d.id || doc.id; d.verified = !!d.verified; out.push(d); });
+        return out;
+      } catch (e) { console.warn('Published addons laden mislukt:', e); return []; }
+    }
+
+    function mergeAddons(base, extra) {
+      var map = {};
+      (base || []).forEach(function(a){ if(a && a.id) map[a.id] = a; });
+      (extra || []).forEach(function(a){ if(a && a.id) map[a.id] = a; });
+      return Object.keys(map).map(function(k){ return map[k]; });
+    }
+
     async function loadRegistry() {
       try {
-        const r = await fetch('registry.json', { cache: 'no-store' });
+        const [r, published] = await Promise.all([
+          fetch('registry.json', { cache: 'no-store' }),
+          fetchPublished()
+        ]);
         registry = await r.json();
+        registry.addons = mergeAddons(registry.addons || [], published || []);
         renderCategories();
         renderAddons();
       } catch (err) {
@@ -126,7 +154,7 @@
       if (query) addons = addons.filter(a =>
         (a.name || '').toLowerCase().includes(query) ||
         (a.description || '').toLowerCase().includes(query) ||
-        (a.tags || []).some(t => t.toLowerCase().includes(query))
+        (a.tags || []).some(t => String(t).toLowerCase().includes(query))
       );
 
       if (!addons.length) { empty.style.display = 'block'; return; }
@@ -150,8 +178,8 @@
           <div class="card-desc">${escapeHtml(addon.description || '')}</div>
           <div class="card-tags">${(addon.tags || []).map(t => '<span class="tag">' + escapeHtml(t) + '</span>').join('')}</div>
           <div class="card-footer">
-            <a class="btn btn-install" href="${escapeHtml(addon.repo)}" target="_blank" rel="noopener">Installeren</a>
-            <a class="btn btn-source" href="${escapeHtml(addon.repo)}" target="_blank" rel="noopener">Broncode</a>
+            <a class="btn btn-install" href="${escapeHtml(addon.repo || '#')}" target="_blank" rel="noopener">Broncode / installeren</a>
+            <a class="btn btn-source" href="${escapeHtml(addon.repo || '#')}" target="_blank" rel="noopener">Repo</a>
           </div>
         `;
         grid.appendChild(card);
