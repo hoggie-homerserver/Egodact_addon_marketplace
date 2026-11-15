@@ -65,9 +65,9 @@
           <div class="row" style="margin-top:10px;"><button class="btn primary" id="loginBtn">Inloggen</button><button class="btn" id="registerBtn">Registreren</button></div>
         </div>
         <div class="card" style="margin:0;background:var(--egd-veld)">
-          <h3>Google</h3>
-          <p>Log in met je Google-account.</p>
-          <div class="row" style="margin-top:10px;"><button class="btn" id="googleBtn">Inloggen met Google</button></div>
+          <h3>Google / GitHub</h3>
+          <p>Log in met je Google- of GitHub-account.</p>
+          <div class="row" style="margin-top:10px;"><button class="btn" id="googleBtn">Inloggen met Google</button><button class="btn" id="githubBtn">Inloggen met GitHub</button></div>
         </div>
       </div>
       <div id="authMsg" class="msg"></div>
@@ -188,6 +188,10 @@ content.js</textarea></div>
   };
   $('googleBtn').onclick = function(){
     MP.ready.then(function(ok){ if(!ok) return; var p = new firebase.auth.GoogleAuthProvider(); MP.auth.signInWithPopup(p).then(function(){ msg($('authMsg'), 'Ingelogd met Google.', 'ok'); }).catch(function(e){ msg($('authMsg'), e.message, 'err'); }); });
+  };
+  var ghBtn = $('githubBtn');
+  if (ghBtn) ghBtn.onclick = function(){
+    MP.ready.then(function(ok){ if(!ok) return; var p = new firebase.auth.GithubAuthProvider(); MP.auth.signInWithPopup(p).then(function(){ msg($('authMsg'), 'Ingelogd met GitHub.', 'ok'); }).catch(function(e){ msg($('authMsg'), e.message, 'err'); }); });
   };
   $('logoutBtn').onclick = function(){ if(MP.auth) MP.auth.signOut(); };
 
