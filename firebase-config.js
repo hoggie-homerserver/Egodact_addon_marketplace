@@ -1,9 +1,5 @@
-﻿// Egodact Addon Marketplace - Firebase (developer portal) config
-// 1) Create a Firebase project (2nd Firestore for devs) and enable:
-//    - Authentication: Email/Password and Google providers
-//    - Firestore Database
-// 2) Paste your web app config below.
-// 3) Set MAINTAINER_UIDS and/or MAINTAINER_EMAILS so only you can approve/reject.
+// Egodact Addon Marketplace - Firebase (developer portal) config
+// Configured for egodact-addon-portal
 // Firestore collections used:
 //   submissions/{autoId}  - developer submissions (pending/approved/rejected)
 //   published/{addonId}   - approved addons shown in marketplace/extension
@@ -12,12 +8,12 @@
   'use strict';
   window.EgodactMarketplaceFirebase = {
     config: {
-      apiKey: "PASTE_API_KEY",
-      authDomain: "PASTE_PROJECT.firebaseapp.com",
-      projectId: "PASTE_PROJECT_ID",
-      storageBucket: "PASTE_PROJECT_ID.appspot.com",
-      messagingSenderId: "PASTE_SENDER_ID",
-      appId: "PASTE_APP_ID"
+      apiKey: "AIzaSyA05hoZF-iiIGi3eaUtnnkG0HuQGlEbWyw",
+      authDomain: "egodact-addon-portal.firebaseapp.com",
+      projectId: "egodact-addon-portal",
+      storageBucket: "egodact-addon-portal.firebasestorage.app",
+      messagingSenderId: "617264725883",
+      appId: "1:617264725883:web:fd23dfa7270dad4b8f47de"
     },
     // Maintainer access for admin review UI (client-side gate; secure data with Firestore rules too)
     MAINTAINER_UIDS: [
