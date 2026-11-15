@@ -198,13 +198,14 @@
       '<div class="hint">Files: <code>'+esc(files||'(geen)')+'</code></div>'+
       (s.reviewNote?'<div class="hint"><strong>Huidige feedback:</strong> '+esc(s.reviewNote)+'</div>':'')+
       '<div class="field"><label>Feedback / reden (optioneel, zichtbaar voor dev)</label><input data-note="'+esc(d.id)+'" value="'+esc(s.reviewNote||'')+'"></div>'+
-      '<div class="row" style="margin-top:10px;"><button class="btn good" data-act="approve" data-id="'+esc(d.id)+'">Goedkeuren &amp; publiceren</button><button class="btn bad" data-act="reject" data-id="'+esc(d.id)+'">Afwijzen</button><button class="btn" data-act="unpublish" data-id="'+esc(d.id)+'">Uit marketplace halen</button></div>'+
+      '<div class="row" style="margin-top:10px;"><button class="btn good" data-act="approve" data-id="'+esc(d.id)+'">Goedkeuren &amp; publiceren</button><button class="btn bad" data-act="reject" data-id="'+esc(d.id)+'">Afwijzen</button><button class="btn" data-act="unpublish" data-id="'+esc(d.id)+'">Uit marketplace halen</button><button class="btn bad" data-act="delete" data-id="'+esc(d.id)+'" title="Verwijdert de publicatie (indien aanwezig) én deze inzending volledig">Volledig verwijderen</button></div>'+
       '<div class="msg" data-msg="'+esc(d.id)+'"></div>';
 
     function noteVal(){ var n=el.querySelector('[data-note="'+d.id+'"]'); return n ? (n.value||'').trim() : ''; }
     el.querySelector('[data-act="approve"]').onclick = async function(){ await approve(d, noteVal(), el); };
     el.querySelector('[data-act="reject"]').onclick = async function(){ await reject(d, noteVal(), el); };
     el.querySelector('[data-act="unpublish"]').onclick = async function(){ await unpublish(d, noteVal(), el); };
+    el.querySelector('[data-act="delete"]').onclick = async function(){ await removeCompletely(d, el); };
     return el;
   }
 
@@ -244,6 +245,20 @@
       if(a.id) await MP.db.collection('published').doc(a.id).delete();
       await MP.db.collection('submissions').doc(d.id).set({status:'rejected', reviewNote: note||'Uit marketplace gehaald', updatedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
       m.className='msg ok'; m.textContent='Uit marketplace gehaald (published verwijderd).'; setTimeout(loadList, 600);
+    } catch(e){ m.className='msg err'; m.textContent=e.message; }
+  }
+
+  async function removeCompletely(d, el){
+    var s=d.data||{}, a=s.addon||{}; var m=el.querySelector('[data-msg="'+d.id+'"]');
+    var name = (a.name || a.id || d.id || 'deze inzending');
+    if(!confirm('Volledig verwijderen: "' + name + '" wordt uit de marketplace gehaald (published) en de inzending wordt permanent verwijderd. Doorgaan?')) return;
+    try {
+      if(a.id){
+        try { await MP.db.collection('published').doc(a.id).delete(); } catch(e) { /* ignore if missing */ }
+      }
+      await MP.db.collection('submissions').doc(d.id).delete();
+      m.className='msg ok'; m.textContent='Volledig verwijderd (publicatie + inzending).';
+      setTimeout(loadList, 600);
     } catch(e){ m.className='msg err'; m.textContent=e.message; }
   }
 })();
