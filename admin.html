@@ -64,8 +64,8 @@
           <div class="row" style="margin-top:10px;"><button class="btn primary" id="loginBtn">Inloggen</button></div>
         </div>
         <div class="card" style="margin:0;background:var(--egd-veld)">
-          <h3>Google / GitHub</h3>
-          <div class="row" style="margin-top:10px;"><button class="btn" id="googleBtn">Inloggen met Google</button><button class="btn" id="githubBtn">Inloggen met GitHub</button></div>
+          <h3>Google</h3>
+          <div class="row" style="margin-top:10px;"><button class="btn" id="googleBtn">Inloggen met Google</button></div>
         </div>
       </div>
       <div id="authMsg" class="msg"></div>
@@ -165,8 +165,6 @@
 
   $('loginBtn').onclick = function(){ MP.ready.then(function(ok){ if(!ok) return; MP.auth.signInWithEmailAndPassword(($('email').value||'').trim(), ($('pass').value||'')).then(function(){}).catch(function(e){ msg($('authMsg'), e.message, 'err'); }); }); };
   $('googleBtn').onclick = function(){ MP.ready.then(function(ok){ if(!ok) return; var p = new firebase.auth.GoogleAuthProvider(); MP.auth.signInWithPopup(p).catch(function(e){ msg($('authMsg'), e.message, 'err'); }); }); };
-  var ghBtn = $('githubBtn');
-  if (ghBtn) ghBtn.onclick = function(){ MP.ready.then(function(ok){ if(!ok) return; var p = new firebase.auth.GithubAuthProvider(); MP.auth.signInWithPopup(p).catch(function(e){ msg($('authMsg'), e.message, 'err'); }); }); };
   $('logoutBtn').onclick = function(){ if(MP.auth) MP.auth.signOut(); };
   $('refreshBtn').onclick = function(){ if(isAdmin) loadList(); };
   document.querySelectorAll('[data-filter]').forEach(function(b){ b.onclick = function(){ currentFilter = b.getAttribute('data-filter'); loadList(); }; });
