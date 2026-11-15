@@ -178,8 +178,7 @@
           <div class="card-desc">${escapeHtml(addon.description || '')}</div>
           <div class="card-tags">${(addon.tags || []).map(t => '<span class="tag">' + escapeHtml(t) + '</span>').join('')}</div>
           <div class="card-footer">
-            <a class="btn btn-install" href="${escapeHtml(addon.repo || '#')}" target="_blank" rel="noopener">Broncode / installeren</a>
-            <a class="btn btn-source" href="${escapeHtml(addon.repo || '#')}" target="_blank" rel="noopener">Repo</a>
+            ${/^https?:\/\//i.test(addon.repo || '') ? `<a class="btn btn-install" href="${escapeHtml(addon.repo)}" target="_blank" rel="noopener">Broncode / installeren</a><a class="btn btn-source" href="${escapeHtml(addon.repo)}" target="_blank" rel="noopener">Repo</a>` : `<span class="btn btn-source" style="cursor:default;opacity:.7;">Geen geldige repo-link</span>`}
           </div>
         `;
         grid.appendChild(card);
