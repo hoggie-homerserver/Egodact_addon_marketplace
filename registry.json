@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-15",
+  "addons": [
+    {
+      "id": "egodact-chat",
+      "name": "Egodact Chat",
+      "author": "MaxiTaxi",
+      "description": "Chat en groepschats met je Egodact-klasgenoten, direct vanuit de topbar.",
+      "version": "1.0.7",
+      "repo": "https://github.com/hoggie-homerserver/Egodact_addon_chat",
+      "downloadUrl": "https://github.com/hoggie-homerserver/Egodact_addon_chat/releases/latest/download/addon.zip",
+      "files": ["content.js", "js/transport.js", "js/store.js", "js/identity.js", "js/directory.js", "config.js"],
+      "entryPoint": "content.js",
+      "sha256": "a8f24d24d8bf",
+      "verified": true,
+      "category": "communicatie",
+      "tags": ["chat", "berichten", "groepen"]
+    },
+    {
+      "id": "egodact-group-project",
+      "name": "Egodact Group Project",
+      "author": "MaxiTaxi",
+      "description": "Gedeelde takenlijsten voor groepsprojecten met subtaken, toewijzingen, rollen, deadlines en voortgang.",
+      "version": "0.1.6",
+      "repo": "https://github.com/hoggie-homerserver/Egodact_addon_group_project",
+      "downloadUrl": "https://github.com/hoggie-homerserver/Egodact_addon_group_project/releases/latest/download/addon.zip",
+      "files": ["content.js", "js/transport.js", "js/store.js"],
+      "entryPoint": "content.js",
+      "sha256": "8b69ef7ab82b34249e7622cef043da0377aed50dce781602a12eb467f00a9685",
+      "verified": true,
+      "category": "productiviteit",
+      "tags": ["taken", "projecten", "groepen", "subtaken"]
+    }
+  ],
+  "categories": [
+    { "id": "communicatie", "name": "Communicatie", "icon": "💬" },
+    { "id": "productiviteit", "name": "Productiviteit", "icon": "📋" },
+    { "id": "games", "name": "Spellen", "icon": "🎮" },
+    { "id": "tools", "name": "Tools", "icon": "🔧" }
+  ]
+}
