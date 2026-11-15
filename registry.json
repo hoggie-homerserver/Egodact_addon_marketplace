@@ -11,6 +11,8 @@
       "repo": "https://github.com/hoggie-homerserver/Egodact_addon_chat",
       "downloadUrl": "https://github.com/hoggie-homerserver/Egodact_addon_chat/releases/latest/download/addon.zip",
       "files": [
+        "sdk.js",
+        "lib.js",
         "vendor/firebase-app-compat.js",
         "vendor/firebase-auth-compat.js",
         "vendor/firebase-firestore-compat.js",
@@ -29,7 +31,11 @@
       "sha256": "a8f24d24d8bf60ffa8f5f6594852f9eec224ba62cbbc4eacaec9dd77dbac5ac6",
       "verified": true,
       "category": "communicatie",
-      "tags": ["chat", "berichten", "groepen"]
+      "tags": [
+        "chat",
+        "berichten",
+        "groepen"
+      ]
     },
     {
       "id": "egodact-group-project",
@@ -40,6 +46,8 @@
       "repo": "https://github.com/hoggie-homerserver/Egodact_addon_group_project",
       "downloadUrl": "https://github.com/hoggie-homerserver/Egodact_addon_group_project/releases/latest/download/addon.zip",
       "files": [
+        "sdk.js",
+        "lib.js",
         "vendor/firebase-app-compat.js",
         "vendor/firebase-auth-compat.js",
         "vendor/firebase-firestore-compat.js",
@@ -52,13 +60,30 @@
       "sha256": "8b69ef7ab82b34249e7622cef043da0377aed50dce781602a12eb467f00a9685",
       "verified": true,
       "category": "productiviteit",
-      "tags": ["taken", "projecten", "groepen", "subtaken"]
+      "tags": [
+        "taken",
+        "projecten",
+        "groepen",
+        "subtaken"
+      ]
     }
   ],
   "categories": [
-    { "id": "communicatie", "name": "Communicatie" },
-    { "id": "productiviteit", "name": "Productiviteit" },
-    { "id": "games", "name": "Spellen" },
-    { "id": "tools", "name": "Tools" }
+    {
+      "id": "communicatie",
+      "name": "Communicatie"
+    },
+    {
+      "id": "productiviteit",
+      "name": "Productiviteit"
+    },
+    {
+      "id": "games",
+      "name": "Spellen"
+    },
+    {
+      "id": "tools",
+      "name": "Tools"
+    }
   ]
 }
