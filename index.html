@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Egodact Addon Marketplace</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; }
+    .header { background: #16213e; padding: 20px 40px; border-bottom: 1px solid #0f3460; }
+    .header h1 { font-size: 24px; color: #e94560; }
+    .header p { color: #aaa; margin-top: 4px; }
+    .container { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+    .search { width: 100%; padding: 12px 16px; border: 1px solid #0f3460; border-radius: 8px; background: #16213e; color: #eee; font-size: 14px; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .card { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 20px; transition: transform 0.2s, box-shadow 0.2s; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .card-icon { width: 48px; height: 48px; border-radius: 10px; background: #0f3460; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .card-name { font-size: 16px; font-weight: 600; }
+    .card-version { font-size: 12px; color: #888; }
+    .card-author { font-size: 12px; color: #aaa; margin-top: 2px; }
+    .card-desc { font-size: 13px; color: #ccc; line-height: 1.5; margin: 12px 0; }
+    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #0f3460; color: #aaa; }
+    .card-footer { display: flex; gap: 8px; align-items: center; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block; }
+    .btn-install { background: #e94560; color: #fff; }
+    .btn-install:hover { background: #c73650; }
+    .btn-source { background: transparent; color: #e94560; border: 1px solid #e94560; }
+    .badge { font-size: 10px; padding: 2px 8px; border-radius: 999px; background: #2e7d32; color: #fff; font-weight: bold; }
+    .empty { text-align: center; padding: 60px 20px; color: #888; }
+    .categories { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .cat-btn { padding: 6px 14px; border: 1px solid #0f3460; border-radius: 6px; background: #16213e; color: #ccc; cursor: pointer; font-size: 13px; }
+    .cat-btn.active { background: #e94560; color: #fff; border-color: #e94560; }
+    .submit-section { margin-top: 40px; padding: 24px; background: #16213e; border-radius: 12px; border: 1px solid #0f3460; }
+    .submit-section h2 { margin-bottom: 12px; color: #e94560; }
+    .submit-section p { color: #aaa; font-size: 14px; line-height: 1.6; }
+    .submit-section a { color: #e94560; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🛒 Egodact Addon Marketplace</h1>
+    <p>Ontdek en installeer addons voor de Egodact Smart extensie</p>
+  </div>
+  <div class="container">
+    <input type="text" class="search" id="search" placeholder="Zoek addons...">
+    <div class="categories" id="categories"></div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none;">Geen addons gevonden.</div>
+    
+    <div class="submit-section">
+      <h2>📦 Addon indienen</h2>
+      <p>Wil je je eigen addon op de marketplace? Maak een pull request naar de <a href="https://github.com/hoggie-homerserver/Egodact_addon_marketplace" target="_blank">registry repository</a>.</p>
+      <p style="margin-top: 8px;">1. Fork de registry repo<br>2. Voeg je addon toe aan <code>registry.json</code><br>3. Maak een pull request<br>4. Na review wordt je addon zichtbaar in de marketplace</p>
+    </div>
+  </div>
+
+  <script>
+    let registry = null;
+    let activeCategory = 'all';
+
+    async function loadRegistry() {
+      try {
+        const r = await fetch('registry.json', { cache: 'no-store' });
+        registry = await r.json();
+        renderCategories();
+        renderAddons();
+      } catch (err) {
+        document.getElementById('grid').innerHTML = '<div class="empty">Kon registry niet laden: ' + err.message + '</div>';
+      }
+    }
+
+    function renderCategories() {
+      const container = document.getElementById('categories');
+      container.innerHTML = '';
+      const allBtn = document.createElement('button');
+      allBtn.className = 'cat-btn' + (activeCategory === 'all' ? ' active' : '');
+      allBtn.textContent = 'Alle';
+      allBtn.addEventListener('click', () => { activeCategory = 'all'; renderCategories(); renderAddons(); });
+      container.appendChild(allBtn);
+      (registry.categories || []).forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'cat-btn' + (activeCategory === cat.id ? ' active' : '');
+        btn.textContent = (cat.icon || '') + ' ' + cat.name;
+        btn.addEventListener('click', () => { activeCategory = cat.id; renderCategories(); renderAddons(); });
+        container.appendChild(btn);
+      });
+    }
+
+    function renderAddons() {
+      const query = document.getElementById('search').value.trim().toLowerCase();
+      const grid = document.getElementById('grid');
+      const empty = document.getElementById('empty');
+      grid.innerHTML = '';
+      
+      let addons = (registry.addons || []).slice();
+      if (activeCategory !== 'all') addons = addons.filter(a => a.category === activeCategory);
+      if (query) addons = addons.filter(a => 
+        (a.name || '').toLowerCase().includes(query) ||
+        (a.description || '').toLowerCase().includes(query) ||
+        (a.tags || []).some(t => t.toLowerCase().includes(query))
+      );
+
+      if (!addons.length) { empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+
+      addons.forEach(addon => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-icon">📦</div>
+            <div>
+              <div class="card-name">${escapeHtml(addon.name)}</div>
+              <div class="card-version">v${escapeHtml(addon.version)}</div>
+              <div class="card-author">door ${escapeHtml(addon.author || 'Onbekend')}</div>
+            </div>
+            ${addon.verified ? '<span class="badge">✓ Official</span>' : ''}
+          </div>
+          <div class="card-desc">${escapeHtml(addon.description || '')}</div>
+          <div class="card-tags">${(addon.tags || []).map(t => '<span class="tag">' + escapeHtml(t) + '</span>').join('')}</div>
+          <div class="card-footer">
+            <a class="btn btn-install" href="${escapeHtml(addon.repo)}" target="_blank">Installeren</a>
+            <a class="btn btn-source" href="${escapeHtml(addon.repo)}" target="_blank">Broncode →</a>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    document.getElementById('search').addEventListener('input', renderAddons);
+    loadRegistry();
+  </script>
+</body>
+</html>
