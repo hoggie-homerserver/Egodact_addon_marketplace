@@ -6,18 +6,18 @@ service cloud.firestore {
       return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // Developer submissions: owner can create/read/update own; admin can read/update all
+    // Developer submissions: owner can create/read/update/delete own; admin can read/update/delete all
     match /submissions/{id} {
       allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
       allow read: if signedIn() && (resource.data.ownerUid == request.auth.uid || isAdmin());
-      allow update: if signedIn() && (resource.data.ownerUid == request.auth.uid || isAdmin());
-      allow delete: if isAdmin();
+      allow update, delete: if signedIn() && (resource.data.ownerUid == request.auth.uid || isAdmin());
     }
 
-    // Approved/published addons visible to everyone (marketplace reads); only admin writes
+    // Approved/published addons visible to everyone (marketplace reads); admin can write, owner can remove own
     match /published/{addonId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin() || (signedIn() && resource.data.ownerUid == request.auth.uid);
     }
 
     // Admin markers (create/manage manually in console or by existing admin if you add rule)

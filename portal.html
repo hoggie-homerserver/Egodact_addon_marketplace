@@ -295,7 +295,8 @@ content.js</textarea><div class="hint" style="margin-top:6px">Of selecteer een a
         var el = document.createElement('div'); el.className='item';
         el.innerHTML = '<div class="item-head"><span class="item-title">'+esc(a.name||a.id||'(naamloos)')+'</span> '+badge(s.status)+' <span class="muted" style="font-size:11px">v'+esc(a.version||'?')+' · '+esc(a.id||'')+'</span></div>'+
           (s.reviewNote?'<div class="hint"><strong>Feedback maintainer:</strong> '+esc(s.reviewNote)+'</div>':'')+
-          '<div class="row" style="margin-top:8px;"><button class="btn" data-edit="'+esc(d.id)+'">Bewerken / opnieuw indienen</button></div>';
+          '<div class="row" style="margin-top:8px;"><button class="btn" data-edit="'+esc(d.id)+'">Bewerken / opnieuw indienen</button><button class="btn bad" data-del="'+esc(d.id)+'">Volledig verwijderen</button></div>'+
+          '<div class="msg" data-msg="'+esc(d.id)+'"></div>';
         el.querySelector('[data-edit]').onclick = function(){
           $('subId').value = d.id;
           $('f-id').value = a.id||''; $('f-name').value=a.name||''; $('f-author').value=a.author||''; $('f-version').value=a.version||'1.0.0';
@@ -303,6 +304,25 @@ content.js</textarea><div class="hint" style="margin-top:6px">Of selecteer een a
           $('f-desc').value=a.description||''; $('f-tags').value=(a.tags||[]).join(', '); $('f-sha').value=a.sha256||''; $('f-files').value=(a.files||[]).join('\n');
           window.scrollTo({top: $('submitCard').offsetTop-10, behavior:'smooth'});
           msg($('submitMsg'),'Inzending geladen: pas aan en klik op indienen om opnieuw ter validatie te sturen.','');
+        };
+        var delBtn = el.querySelector('[data-del]');
+        if (delBtn) delBtn.onclick = async function(){
+          var mEl = el.querySelector('[data-msg="'+d.id+'"]');
+          var name = a.name || a.id || d.id || 'deze addon';
+          if(!confirm('Volledig verwijderen: "' + name + '" wordt (indien gepubliceerd) uit de marketplace gehaald en je inzending wordt permanent verwijderd. Doorgaan?')) return;
+          try {
+            var addonId = a.id;
+            // Probeer publicatie te verwijderen als deze addon (door jou) gepubliceerd is
+            if(addonId){
+              try { await MP.db.collection('published').doc(addonId).delete(); } catch(e) { /* mogelijk niet gepubliceerd of geen rechten; ga door */ }
+            }
+            await MP.db.collection('submissions').doc(d.id).delete();
+            if($('subId').value === d.id) resetForm();
+            if(mEl){ mEl.className='msg ok'; mEl.textContent='Volledig verwijderd.'; }
+            setTimeout(function(){ loadMine(user); }, 500);
+          } catch(e){
+            if(mEl){ mEl.className='msg err'; mEl.textContent = e.message + ' (Mogelijk moeten de Firestore-regels worden bijgewerkt zodat je je eigen inzending/publicatie mag verwijderen.)'; }
+          }
         };
         list.appendChild(el);
       });

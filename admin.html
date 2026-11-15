@@ -217,7 +217,7 @@
       version: a.version || '1.0.0', repo: a.repo, branch: a.branch || null, files: a.files || [],
       entryPoint: a.entryPoint || 'content.js', sha256: a.sha256 || null, category: a.category || 'tools',
       tags: a.tags || [], verified: true, source: 'marketplace',
-      approvedAt: firebase.firestore.FieldValue.serverTimestamp(), submissionId: sub.id, ownerEmail: sub.data.ownerEmail || null
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp(), submissionId: sub.id, ownerEmail: sub.data.ownerEmail || null, ownerUid: sub.data.ownerUid || null
     };
   }
 
