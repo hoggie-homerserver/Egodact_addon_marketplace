@@ -103,7 +103,7 @@
       </div>
       <div class="field"><label for="f-files">Bestanden in laadvolgorde (een per regel)</label><textarea id="f-files">sdk.js
 lib.js
-content.js</textarea></div>
+content.js</textarea><div class="hint" style="margin-top:6px">Of selecteer een addon-map om bestanden automatisch in te vullen:</div><input id="f-folder" type="file" webkitdirectory directory multiple style="margin-top:4px"><div id="f-folder-msg" class="hint"></div></div>
       <div class="row" style="margin-top:12px;"><button class="btn primary" id="submitBtn">Indienen ter validatie</button><button class="btn ghost" id="resetBtn" type="button">Nieuw formulier</button></div>
       <div id="submitMsg" class="msg"></div>
       <p class="hint">Je inzending krijgt status <em>pending</em>. De maintainer kan goedkeuren (publiceren), afwijzen of feedback geven. Je kunt je inzending hierna aanpassen en opnieuw indienen.</p>
@@ -193,8 +193,42 @@ content.js</textarea></div>
 
   function resetForm(){
     $('subId').value=''; $('f-id').value=''; $('f-name').value=''; $('f-author').value=''; $('f-version').value='1.0.0'; $('f-repo').value=''; $('f-branch').value=''; $('f-category').value='tools'; $('f-entry').value='content.js'; $('f-desc').value=''; $('f-tags').value=''; $('f-sha').value=''; $('f-files').value='sdk.js\nlib.js\ncontent.js';
+    var ff=$('f-folder'); if(ff) ff.value=''; var fm=$('f-folder-msg'); if(fm) fm.textContent='';
   }
   $('resetBtn').onclick = resetForm;
+
+  var folderInput = $('f-folder');
+  if (folderInput) folderInput.addEventListener('change', function(){
+    var files = Array.prototype.slice.call(folderInput.files || []);
+    if (!files.length) return;
+    function relPath(f){
+      var p = f.webkitRelativePath || f.name || '';
+      // strip top-level folder name
+      var idx = p.indexOf('/');
+      return idx !== -1 ? p.slice(idx+1) : p;
+    }
+    var paths = files.map(relPath).filter(function(p){ return p && p.indexOf('.') !== -1 && p.indexOf('/.') === -1 && p.indexOf('.') !== 0; });
+    // prefer common addon file order, keep others after
+    var priority = { 'sdk.js': 1, 'lib.js': 2, 'content.js': 3 };
+    paths.sort(function(a,b){
+      var ba = a.split('/').pop(), bb = b.split('/').pop();
+      var pa = priority[ba] || (ba === 'manifest.json' ? 99 : 50);
+      var pb = priority[bb] || (bb === 'manifest.json' ? 99 : 50);
+      if (pa !== pb) return pa - pb;
+      return a.localeCompare(b);
+    });
+    // remove manifest.json from runtime load list by default? keep visible but user can remove; better include all relevant js/css? include all
+    $('f-files').value = paths.join('\n');
+    var base = (files[0].webkitRelativePath || '').split('/')[0] || '';
+    if (paths.indexOf('content.js') !== -1) $('f-entry').value = 'content.js';
+    else if (paths.length) $('f-entry').value = paths[paths.length-1].split('/').pop() || 'content.js';
+    if (base && !$('f-name').value) $('f-name').value = base;
+    if (base && !$('f-id').value) {
+      var slug = base.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+      if (slug) $('f-id').value = (slug.indexOf('egodact-')===0?slug:'egodact-'+slug);
+    }
+    var fm=$('f-folder-msg'); if(fm) fm.textContent = paths.length + ' bestand(en) ingevuld vanuit map' + (base ? ' "'+base+'"' : '') + '. Controleer de laadvolgorde.';
+  });
 
   function readAddon(){
     return {
