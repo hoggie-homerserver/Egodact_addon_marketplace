@@ -207,27 +207,38 @@ content.js</textarea><div class="hint" style="margin-top:6px">Of selecteer een a
       var idx = p.indexOf('/');
       return idx !== -1 ? p.slice(idx+1) : p;
     }
-    var paths = files.map(relPath).filter(function(p){ return p && p.indexOf('.') !== -1 && p.indexOf('/.') === -1 && p.indexOf('.') !== 0; });
-    // prefer common addon file order, keep others after
-    var priority = { 'sdk.js': 1, 'lib.js': 2, 'content.js': 3 };
+    var allPaths = files.map(relPath).filter(function(p){
+      if (!p) return false;
+      if (p.indexOf('/.') !== -1 || p.charAt(0) === '.') return false; // hidden/.git
+      var base = p.split('/').pop() || '';
+      if (/^(README|LICENSE|CHANGELOG|CONTRIBUTING)(\.|$)/i.test(base)) return false;
+      if (/^\.|Thumbs\.db$/i.test(base)) return false;
+      return p.indexOf('.') !== -1;
+    });
+    // prefer runtime addon files; exclude manifest.json from load list by default
+    var runtimePaths = allPaths.filter(function(p){ return (p.split('/').pop()||'').toLowerCase() !== 'manifest.json'; });
+    var paths = runtimePaths.length ? runtimePaths : allPaths;
+    var priority = { 'sdk.js': 1, 'lib.js': 2, 'content.js': 3, 'background.js': 4 };
     paths.sort(function(a,b){
-      var ba = a.split('/').pop(), bb = b.split('/').pop();
-      var pa = priority[ba] || (ba === 'manifest.json' ? 99 : 50);
-      var pb = priority[bb] || (bb === 'manifest.json' ? 99 : 50);
+      var ba = (a.split('/').pop()||'').toLowerCase(), bb = (b.split('/').pop()||'').toLowerCase();
+      var pa = priority[ba] || 50;
+      var pb = priority[bb] || 50;
       if (pa !== pb) return pa - pb;
       return a.localeCompare(b);
     });
-    // remove manifest.json from runtime load list by default? keep visible but user can remove; better include all relevant js/css? include all
     $('f-files').value = paths.join('\n');
-    var base = (files[0].webkitRelativePath || '').split('/')[0] || '';
+    var baseFolder = (files[0].webkitRelativePath || '').split('/')[0] || '';
     if (paths.indexOf('content.js') !== -1) $('f-entry').value = 'content.js';
-    else if (paths.length) $('f-entry').value = paths[paths.length-1].split('/').pop() || 'content.js';
-    if (base && !$('f-name').value) $('f-name').value = base;
-    if (base && !$('f-id').value) {
-      var slug = base.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    else {
+      var js = paths.filter(function(p){ return /\.js$/i.test(p); });
+      $('f-entry').value = (js[js.length-1] || paths[paths.length-1] || 'content.js').split('/').pop();
+    }
+    if (baseFolder && !$('f-name').value) $('f-name').value = baseFolder;
+    if (baseFolder && !$('f-id').value) {
+      var slug = baseFolder.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
       if (slug) $('f-id').value = (slug.indexOf('egodact-')===0?slug:'egodact-'+slug);
     }
-    var fm=$('f-folder-msg'); if(fm) fm.textContent = paths.length + ' bestand(en) ingevuld vanuit map' + (base ? ' "'+base+'"' : '') + '. Controleer de laadvolgorde.';
+    var fm=$('f-folder-msg'); if(fm) fm.textContent = paths.length + ' bestand(en) ingevuld vanuit map' + (baseFolder ? ' "'+baseFolder+'"' : '') + ' (' + files.length + ' geselecteerd, verborgen/onrelevante bestanden overgeslagen). Controleer de laadvolgorde.';
   });
 
   function readAddon(){
