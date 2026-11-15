@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "updatedAt": "2026-11-15",
   "addons": [
     {
@@ -65,6 +65,104 @@
         "projecten",
         "groepen",
         "subtaken"
+      ]
+    },
+    {
+      "id": "egodact-learning-mode",
+      "name": "Learning Mode",
+      "author": "MaxiTaxi",
+      "description": "Eisenhower-matrix, compacte modus en een zwevend notitieblok om gefocust te werken.",
+      "version": "0.3.2",
+      "repo": "https://github.com/hoggie-homerserver/Egodact_addon_Learning_Mode",
+      "downloadUrl": "https://github.com/hoggie-homerserver/Egodact_addon_Learning_Mode/releases/latest/download/addon.zip",
+      "files": [
+        "sdk.js",
+        "lib.js",
+        "content.js"
+      ],
+      "entryPoint": "content.js",
+      "sha256": "e94fef125285bd719cb2759c8f760faf3e04ece4f6a58562e57d38ab0696b74f",
+      "verified": true,
+      "category": "productiviteit",
+      "tags": [
+        "focus",
+        "planning",
+        "notities",
+        "eisenhower"
+      ]
+    },
+    {
+      "id": "egodact-chat-arcade",
+      "name": "Chat Arcade",
+      "author": "MaxiTaxi",
+      "description": "Turn-based mini-games zoals boter-kaas-en-eieren en vier op een rij, met statistieken, dagelijkse doelen en online multiplayer.",
+      "version": "0.2.0",
+      "repo": "https://github.com/hoggie-homerserver/Egodact_chat_game_addon",
+      "downloadUrl": "https://github.com/hoggie-homerserver/Egodact_chat_game_addon/releases/latest/download/addon.zip",
+      "files": [
+        "vendor/firebase-app-compat.js",
+        "vendor/firebase-auth-compat.js",
+        "vendor/firebase-firestore-compat.js",
+        "sdk.js",
+        "lib.js",
+        "content.js"
+      ],
+      "entryPoint": "content.js",
+      "sha256": "69af6c10f0301711cd76cd2b79a5db7313b029680bdfb51dbf228145f711a333",
+      "verified": true,
+      "category": "games",
+      "tags": [
+        "spellen",
+        "boter-kaas-en-eieren",
+        "vier op een rij",
+        "multiplayer"
+      ]
+    },
+    {
+      "id": "tower-stack-addon",
+      "name": "Tower Stack",
+      "author": "MaxiTaxi",
+      "description": "Stapel blokken en bouw de hoogste toren, direct in Egodact.",
+      "version": "0.1.1",
+      "repo": "https://github.com/hoggie-homerserver/Egodact_addon_Tower_Stack",
+      "branch": "master",
+      "downloadUrl": "https://github.com/hoggie-homerserver/Egodact_addon_Tower_Stack/releases/latest/download/addon.zip",
+      "files": [
+        "sdk.js",
+        "lib.js",
+        "content.js"
+      ],
+      "entryPoint": "content.js",
+      "sha256": "6f1bf1c85e146b2178150b43299375b786588796e4220b6c7b7dbb9434edb538",
+      "verified": true,
+      "category": "games",
+      "tags": [
+        "spellen",
+        "toren",
+        "stapelen"
+      ]
+    },
+    {
+      "id": "example-addon",
+      "name": "Example Addon",
+      "author": "MaxiTaxi",
+      "description": "Voorbeeld-addon met een menu, topbar-knop en een klein spel. Handig startpunt voor je eigen addon.",
+      "version": "1.9.0",
+      "repo": "https://github.com/hoggie-homerserver/Egodact_addon_extension_addons",
+      "downloadUrl": "https://github.com/hoggie-homerserver/Egodact_addon_extension_addons/releases/latest/download/addon.zip",
+      "files": [
+        "example-addon/sdk.js",
+        "example-addon/lib.js",
+        "example-addon/content.js"
+      ],
+      "entryPoint": "example-addon/content.js",
+      "sha256": "0cca7ae4c24a803fb658ac56197f5702c8186b73fab804f77c4621985e8ea0b2",
+      "verified": true,
+      "category": "tools",
+      "tags": [
+        "voorbeeld",
+        "ontwikkelaars",
+        "startpunt"
       ]
     }
   ],
