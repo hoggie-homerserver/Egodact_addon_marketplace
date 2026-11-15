@@ -111,18 +111,19 @@
       return Object.keys(map).map(function(k){ return map[k]; });
     }
 
-    async function loadRegistry() {
+    async function loadRegistry(silent) {
       try {
         const [r, published] = await Promise.all([
           fetch('registry.json', { cache: 'no-store' }),
           fetchPublished()
         ]);
-        registry = await r.json();
-        registry.addons = mergeAddons(registry.addons || [], published || []);
+        const data = await r.json();
+        data.addons = mergeAddons(data.addons || [], published || []);
+        registry = data;
         renderCategories();
         renderAddons();
       } catch (err) {
-        document.getElementById('grid').innerHTML = '<div class="empty">Kon registry niet laden: ' + escapeHtml(err.message) + '</div>';
+        if (!silent) document.getElementById('grid').innerHTML = '<div class="empty">Kon registry niet laden: ' + escapeHtml(err.message) + '</div>';
       }
     }
 
@@ -191,6 +192,8 @@
 
     document.getElementById('search').addEventListener('input', renderAddons);
     loadRegistry();
+    setInterval(function(){ loadRegistry(true); }, 30000);
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) loadRegistry(true); });
   </script>
 </body>
 </html>
