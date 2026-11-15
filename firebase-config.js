@@ -17,10 +17,10 @@
     },
     // Maintainer access for admin review UI (client-side gate; secure data with Firestore rules too)
     MAINTAINER_UIDS: [
-      // "your-firebase-auth-uid"
+      "autp1QtBJKbqoZGAQevbpfsGbgT2"
     ],
     MAINTAINER_EMAILS: [
-      // "you@example.com"
+      "maxth3hoggie@gmail.com"
     ]
   };
 })();
