@@ -34,9 +34,9 @@
     }
   ],
   "categories": [
-    { "id": "communicatie", "name": "Communicatie", "icon": "💬" },
-    { "id": "productiviteit", "name": "Productiviteit", "icon": "📋" },
-    { "id": "games", "name": "Spellen", "icon": "🎮" },
-    { "id": "tools", "name": "Tools", "icon": "🔧" }
+    { "id": "communicatie", "name": "Communicatie" },
+    { "id": "productiviteit", "name": "Productiviteit" },
+    { "id": "games", "name": "Spellen" },
+    { "id": "tools", "name": "Tools" }
   ]
 }

@@ -8,7 +8,8 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; }
     .header { background: #16213e; padding: 20px 40px; border-bottom: 1px solid #0f3460; }
-    .header h1 { font-size: 24px; color: #e94560; }
+    .header h1 { font-size: 24px; color: #e94560; display: flex; align-items: center; gap: 10px; }
+    .header h1 svg { width: 28px; height: 28px; }
     .header p { color: #aaa; margin-top: 4px; }
     .container { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
     .search { width: 100%; padding: 12px 16px; border: 1px solid #0f3460; border-radius: 8px; background: #16213e; color: #eee; font-size: 14px; margin-bottom: 20px; }
@@ -16,7 +17,8 @@
     .card { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 20px; transition: transform 0.2s, box-shadow 0.2s; }
     .card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
     .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .card-icon { width: 48px; height: 48px; border-radius: 10px; background: #0f3460; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .card-icon { width: 48px; height: 48px; border-radius: 10px; background: #0f3460; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #e94560; }
+    .card-icon svg { width: 24px; height: 24px; }
     .card-name { font-size: 16px; font-weight: 600; }
     .card-version { font-size: 12px; color: #888; }
     .card-author { font-size: 12px; color: #aaa; margin-top: 2px; }
@@ -41,7 +43,10 @@
 </head>
 <body>
   <div class="header">
-    <h1>🛒 Egodact Addon Marketplace</h1>
+    <h1>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      Egodact Addon Marketplace
+    </h1>
     <p>Ontdek en installeer addons voor de Egodact Smart extensie</p>
   </div>
   <div class="container">
@@ -51,7 +56,7 @@
     <div class="empty" id="empty" style="display:none;">Geen addons gevonden.</div>
     
     <div class="submit-section">
-      <h2>📦 Addon indienen</h2>
+      <h2>Addon indienen</h2>
       <p>Wil je je eigen addon op de marketplace? Maak een pull request naar de <a href="https://github.com/hoggie-homerserver/Egodact_addon_marketplace" target="_blank">registry repository</a>.</p>
       <p style="margin-top: 8px;">1. Fork de registry repo<br>2. Voeg je addon toe aan <code>registry.json</code><br>3. Maak een pull request<br>4. Na review wordt je addon zichtbaar in de marketplace</p>
     </div>
@@ -83,7 +88,7 @@
       (registry.categories || []).forEach(cat => {
         const btn = document.createElement('button');
         btn.className = 'cat-btn' + (activeCategory === cat.id ? ' active' : '');
-        btn.textContent = (cat.icon || '') + ' ' + cat.name;
+        btn.textContent = cat.name;
         btn.addEventListener('click', () => { activeCategory = cat.id; renderCategories(); renderAddons(); });
         container.appendChild(btn);
       });
@@ -106,24 +111,26 @@
       if (!addons.length) { empty.style.display = 'block'; return; }
       empty.style.display = 'none';
 
+      const packageIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>';
+
       addons.forEach(addon => {
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
           <div class="card-header">
-            <div class="card-icon">📦</div>
+            <div class="card-icon">${packageIcon}</div>
             <div>
               <div class="card-name">${escapeHtml(addon.name)}</div>
               <div class="card-version">v${escapeHtml(addon.version)}</div>
               <div class="card-author">door ${escapeHtml(addon.author || 'Onbekend')}</div>
             </div>
-            ${addon.verified ? '<span class="badge">✓ Official</span>' : ''}
+            ${addon.verified ? '<span class="badge">Official</span>' : ''}
           </div>
           <div class="card-desc">${escapeHtml(addon.description || '')}</div>
           <div class="card-tags">${(addon.tags || []).map(t => '<span class="tag">' + escapeHtml(t) + '</span>').join('')}</div>
           <div class="card-footer">
             <a class="btn btn-install" href="${escapeHtml(addon.repo)}" target="_blank">Installeren</a>
-            <a class="btn btn-source" href="${escapeHtml(addon.repo)}" target="_blank">Broncode →</a>
+            <a class="btn btn-source" href="${escapeHtml(addon.repo)}" target="_blank">Broncode</a>
           </div>
         `;
         grid.appendChild(card);
