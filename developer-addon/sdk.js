@@ -106,6 +106,26 @@
         registerGame: function (meta) { dispatch('game', meta || {}); },
         registerSidebarPanel: function (meta) { dispatch('sidebar-panel', meta || {}); },
         registerHamburger: function (meta) { dispatch('hamburger', meta || {}); },
+
+        // Opslag per add-on (zelfde prefix als de host).
+        storage: function (addonId) {
+            const prefix = 'egodact_addon_' + (addonId || 'global') + '_';
+            return {
+                get: function (key, fallback) {
+                    try {
+                        const raw = localStorage.getItem(prefix + key);
+                        return raw === null ? fallback : JSON.parse(raw);
+                    } catch (err) { return fallback; }
+                },
+                set: function (key, value) {
+                    try { localStorage.setItem(prefix + key, JSON.stringify(value)); return true; }
+                    catch (err) { return false; }
+                },
+                remove: function (key) {
+                    try { localStorage.removeItem(prefix + key); } catch (err) {}
+                }
+            };
+        },
         registerShortcut: function (meta) { dispatch('shortcut', meta || {}); },
         unregisterShortcut: function (id) { dispatch('unregister-shortcut', { id: id }); },
         setLearningMode: function (v) { dispatch('learning-mode', { enabled: !!v }); },
