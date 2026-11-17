@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Egodact Developer Tools",
+  "version": "0.1.0",
+  "description": "Developer tools for building and debugging Egodact add-ons.",
+  "content_scripts": [
+    {
+      "matches": ["https://app.egodact.com/*"],
+      "js": ["firebase-app-compat.js", "firebase-auth-compat.js", "sdk.js", "lib.js", "config.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

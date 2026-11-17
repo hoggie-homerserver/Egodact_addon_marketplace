@@ -80,6 +80,14 @@
       </div>
     </div>
 
+    <div id="devtoolsCard" class="card hidden">
+      <h2>Developer Tools voor Egodact</h2>
+      <p>Download de browserextensie met een event-inspector, addon-validator en starterkit. Na installeren open je <strong>Developer Tools</strong> in Egodact en log je in met dit marketplace-account.</p>
+      <div class="row" style="margin-top:10px;">
+        <a class="btn primary" href="developer-addon.zip" download>Download Developer Tools (ZIP)</a>
+        <a class="btn ghost" href="developer.html#install-developer-addon">Installatie uitleg</a>
+      </div>
+    </div>
     <div id="submitCard" class="card hidden">
       <h2>Addon indienen / bijwerken</h2>
       <p>Vul alles in en dien in ter validatie. Na goedkeuring door de maintainer verschijnt je addon in de marketplace (website + extensie). Gebruik de <strong>Example Addon</strong> als startpunt: <a href="https://github.com/hoggie-homerserver/Egodact_addon_extension_addons" target="_blank" rel="noopener">repo</a>.</p>
@@ -170,6 +178,7 @@ content.js</textarea><div class="hint" style="margin-top:6px">Of selecteer een a
       $('userBar').classList.toggle('hidden', !on);
       $('submitCard').classList.toggle('hidden', !on);
       $('mineCard').classList.toggle('hidden', !on);
+      $('devtoolsCard').classList.toggle('hidden', !on);
       if(on){
         $('userEmail').textContent = user.email || '(ingelogd)';
         $('userId').textContent = 'uid: ' + user.uid;
