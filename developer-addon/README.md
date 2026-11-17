@@ -1,6 +1,6 @@
 # Egodact Developer Tools
 
-A standalone Egodact add-on for marketplace developers (v0.2.1). It adds a gated developer workspace to Egodact with a live SDK event inspector, a registration registry, an SDK/host capability check, a storage browser, a manifest and file-list validator, and a starter kit + snippet generator.
+A standalone Egodact add-on for marketplace developers (v0.3.0). It adds a gated developer workspace to Egodact with a live SDK event inspector, a registration registry, load-timing measurements, an SDK/host capability check, a live theme-variable tester, a storage browser, a marketplace lookup, a manifest and file-list validator, and a starter kit + snippet generator.
 
 ## Install
 
@@ -16,11 +16,14 @@ The sign-in page is hosted by the marketplace, where Firebase Auth is already co
 
 - **Live events**: inspect `egodact:*` events (registrations, opens, toasts, shortcuts, challenges, theme/addon changes) plus runtime errors. Filter, pause, show errors only, identical events are grouped with a count, and the log can be exported as JSON. The event tester dispatches synthetic events to check host handlers.
 - **Registry**: live overview of everything add-ons registered (addon, menu, hamburger, button, game, sidebar panel, shortcut). Items whose `addonId` never registered are flagged, which catches typo'd ids.
-- **Host & SDK**: shows which SDK methods this build actually provides (the bundled SDK used to miss `registerHamburger`), the required-API check, and all `--egd-*` theme variables with colour previews. Report can be copied.
+- **Timing**: milliseconds since navigation for each add-on's first registration, plus registration/open/event counters and last activity. Add-ons slower than 2000 ms are highlighted.
+- **Host & SDK**: which SDK methods this build actually provides (the bundled SDK used to miss `registerHamburger`), the required-API check, the host extension version and `host:ready` moment, and all `--egd-*` theme variables with colour previews. Report can be copied.
+- **Thema**: edit `--egd-*` variables live to test your add-on in other colours, then reset or copy the resulting CSS.
 - **Storage**: browse, edit, copy and delete `egodact_addon_*` localStorage keys — the same data `client.storage(addonId)` uses.
+- **Marketplace**: compares the add-ons running on the page with `registry.json` (installed version vs marketplace version, update available, verified flag).
 - **Validate add-on**: check a pasted manifest and file list for common marketplace add-on issues.
 - **Starter kit**: generate a minimal manifest.json and content.js, plus copyable snippets for hamburger items, header buttons, games, modals, storage, shortcuts and challenges.
 
 ## Source files
 
-manifest.json, content.js, sdk.js, and lib.js.
+manifest.json, content.js, sdk.js, lib.js, and background.js (registry fetch proxy).

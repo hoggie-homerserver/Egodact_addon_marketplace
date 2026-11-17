@@ -7,7 +7,7 @@
 
   var ADDON_ID = 'egodact-developer-tools';
   var MENU_ID = ADDON_ID + '-menu';
-  var ADDON_VERSION = '0.2.1';
+  var ADDON_VERSION = '0.3.0';
   var AUTH_ORIGIN = 'https://hoggie-homerserver.github.io';
   var AUTH_URL = AUTH_ORIGIN + '/Egodact_addon_marketplace/developer-auth.html';
   var PORTAL_URL = AUTH_ORIGIN + '/Egodact_addon_marketplace/portal.html';
@@ -24,7 +24,13 @@
   var eventFilter = '';
   var events = [];
   var registry = {};
+  var itemOwners = {};
   var eventsRenderTimer = null;
+  var hostInfo = null;
+  var hostReadyAt = 0;
+  var themeBaseline = null;
+  var marketplaceCache = null;
+  var marketplaceLoading = false;
 
   var MENU_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-2.5 2.5-3.5-3.5z"/></svg>';
 
@@ -121,8 +127,11 @@
         '<nav id="egd-dev-tabs">' +
           '<button type="button" data-tab="events">Live events</button>' +
           '<button type="button" data-tab="registry">Registry</button>' +
+          '<button type="button" data-tab="timing">Timing</button>' +
           '<button type="button" data-tab="host">Host &amp; SDK</button>' +
+          '<button type="button" data-tab="theme">Thema</button>' +
           '<button type="button" data-tab="storage">Storage</button>' +
+          '<button type="button" data-tab="marketplace">Marketplace</button>' +
           '<button type="button" data-tab="validate">Validate add-on</button>' +
           '<button type="button" data-tab="starter">Starter kit</button>' +
         '</nav>' +
@@ -170,6 +179,31 @@
           '</div>' +
           '<p class="egd-dev-muted" style="margin:0 0 8px;">Sleutels met prefix <code>' + STORAGE_PREFIX + '</code> (de opslag die <code>client.storage()</code> gebruikt).</p>' +
           '<div id="egd-dev-storage-list" class="egd-dev-list"></div>' +
+        '</section>' +
+        '<section data-panel="timing" style="display:none;">' +
+          '<div class="egd-dev-row">' +
+            '<button type="button" data-act="timing-refresh">Refresh</button>' +
+            '<span class="egd-dev-muted" id="egd-dev-timing-summary"></span>' +
+          '</div>' +
+          '<p class="egd-dev-muted" style="margin:0 0 8px;">Moment (ms sinds navigatie) waarop een add-on zich voor het eerst aanmeldde. Traag = later dan 2000 ms.</p>' +
+          '<div id="egd-dev-timing-list" class="egd-dev-list"></div>' +
+        '</section>' +
+        '<section data-panel="theme" style="display:none;">' +
+          '<div class="egd-dev-row">' +
+            '<button type="button" data-act="theme-refresh">Refresh</button>' +
+            '<button type="button" data-act="theme-reset">Reset alles</button>' +
+            '<button type="button" data-act="theme-copy">Copy CSS</button>' +
+          '</div>' +
+          '<p class="egd-dev-muted" style="margin:0 0 8px;">Pas <code>--egd-*</code>-variabelen live aan om je add-on in andere kleuren te testen. Reset haalt de override weg.</p>' +
+          '<div id="egd-dev-theme-list" class="egd-dev-list"></div>' +
+        '</section>' +
+        '<section data-panel="marketplace" style="display:none;">' +
+          '<div class="egd-dev-row">' +
+            '<button type="button" data-act="market-refresh">Refresh</button>' +
+            '<span class="egd-dev-muted" id="egd-dev-market-status"></span>' +
+          '</div>' +
+          '<p class="egd-dev-muted" style="margin:0 0 8px;">Vergelijkt de op deze pagina geregistreerde add-ons met de marketplace-registry (registry.json).</p>' +
+          '<div id="egd-dev-market-list" class="egd-dev-list"></div>' +
         '</section>' +
         '<section data-panel="validate" style="display:none;">' +
           '<p class="egd-dev-muted" style="margin:0 0 8px;">Paste the manifest and the files that will be in your add-on folder.</p>' +
@@ -245,6 +279,7 @@
         if (el.id === 'egd-dev-registry-filter') renderRegistry(root);
         else renderStorage(root);
       }
+      else if (el.getAttribute && el.getAttribute('data-theme-var')) applyThemeVar(el);
       else if (el.id === 'egd-dev-addon-id') el.value = slug(el.value);
       else if (el.id === 'egd-dev-addon-name') generateStarter(root);
     });
@@ -274,6 +309,11 @@
       case 'storage-copy': copyText(el.getAttribute('data-raw') || '', 'Value copied.'); break;
       case 'storage-del': removeStorageKey(el.getAttribute('data-key') || ''); renderStorage(root); break;
       case 'storage-save': saveStorageKey(el); renderStorage(root); break;
+      case 'timing-refresh': renderTiming(root); break;
+      case 'theme-refresh': themeBaseline = null; renderTheme(root); break;
+      case 'theme-reset': resetThemeVars(root); break;
+      case 'theme-copy': copyText(themeCss(), 'CSS copied.'); break;
+      case 'market-refresh': marketplaceCache = null; renderMarketplace(root); break;
       case 'validate-run': validateAddon(root); break;
       case 'starter-generate': generateStarter(root); generateSnippet(root); break;
       case 'starter-copy-all':
@@ -375,8 +415,11 @@
     });
     if (name === 'events') renderEvents(root);
     else if (name === 'registry') renderRegistry(root);
+    else if (name === 'timing') renderTiming(root);
     else if (name === 'host') renderHost(root);
+    else if (name === 'theme') renderTheme(root);
     else if (name === 'storage') renderStorage(root);
+    else if (name === 'marketplace') renderMarketplace(root);
   }
 
   // ------------------------------------------------------------
@@ -385,6 +428,11 @@
   function hookEvents() {
     if (eventsHooked) return;
     eventsHooked = true;
+    document.addEventListener('egodact:host:ready', function (event) {
+      var detail = (event && event.detail) || {};
+      hostInfo = { version: detail.version || '', sdk: detail.sdk || '', at: Math.round(performance.now()) };
+      if (!hostReadyAt) hostReadyAt = performance.now();
+    }, true);
     [
       'egodact:host:ready',
       'egodact:addon:register',
@@ -528,27 +576,53 @@
   // ------------------------------------------------------------
   // registry
   // ------------------------------------------------------------
-  function updateRegistry(name, detail) {
-    if (name !== 'egodact:addon:register' || !detail || typeof detail !== 'object') return;
-    var type = detail.type || 'unknown';
-    var meta = detail.meta || {};
-    if (type === 'addon') {
-      var addonKey = meta.id || '(geen id)';
-      registry[addonKey] = registry[addonKey] || { addon: null, items: [] };
-      registry[addonKey].addon = meta;
-      return;
+  function ensureBucket(key) {
+    if (!registry[key]) {
+      registry[key] = { addon: null, items: [], stats: { firstMs: null, lastMs: null, registers: 0, opens: 0, events: 0 } };
     }
-    var owner = meta.addonId || '(geen addonId)';
-    var bucket = registry[owner] || (registry[owner] = { addon: null, items: [] });
-    var itemId = String(meta.id || '');
-    for (var i = 0; i < bucket.items.length; i++) {
-      if (bucket.items[i].type === type && String(bucket.items[i].meta.id || '') === itemId) {
-        bucket.items[i].count = (bucket.items[i].count || 1) + 1;
-        bucket.items[i].meta = meta;
+    return registry[key];
+  }
+
+  function updateRegistry(name, detail) {
+    if (!detail || typeof detail !== 'object') return;
+    var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    var meta = detail.meta && typeof detail.meta === 'object' ? detail.meta : {};
+    var type = detail.type || '';
+    if (name === 'egodact:addon:register') {
+      if (type === 'addon') {
+        var addonKey = meta.id || '(geen id)';
+        var addonBucket = ensureBucket(addonKey);
+        addonBucket.addon = meta;
+        if (addonBucket.stats.firstMs === null) addonBucket.stats.firstMs = now;
+        addonBucket.stats.lastMs = now;
         return;
       }
+      var owner = meta.addonId || '(geen addonId)';
+      var bucket = ensureBucket(owner);
+      var itemId = String(meta.id || '');
+      if (itemId) itemOwners[itemId] = owner;
+      if (bucket.stats.firstMs === null) bucket.stats.firstMs = now;
+      bucket.stats.registers++;
+      bucket.stats.lastMs = now;
+      for (var i = 0; i < bucket.items.length; i++) {
+        if (bucket.items[i].type === type && String(bucket.items[i].meta.id || '') === itemId) {
+          bucket.items[i].count = (bucket.items[i].count || 1) + 1;
+          bucket.items[i].meta = meta;
+          return;
+        }
+      }
+      bucket.items.push({ type: type, meta: meta, count: 1 });
+      return;
     }
-    bucket.items.push({ type: type, meta: meta, count: 1 });
+    var ownerId = '';
+    if (detail.id && itemOwners[detail.id]) ownerId = itemOwners[detail.id];
+    else if (detail.addonId) ownerId = detail.addonId;
+    if (!ownerId) return;
+    var eventBucket = ensureBucket(ownerId);
+    if (name === 'egodact:addon:open') eventBucket.stats.opens++;
+    if (eventBucket.stats.firstMs === null) eventBucket.stats.firstMs = now;
+    eventBucket.stats.events++;
+    eventBucket.stats.lastMs = now;
   }
 
   function renderRegistry(root) {
@@ -633,12 +707,26 @@
   // ------------------------------------------------------------
   // host & sdk
   // ------------------------------------------------------------
+  function hostVersionInfo() {
+    var version = '';
+    var sdk = '';
+    try {
+      version = document.documentElement.getAttribute('data-egodact-version') || '';
+      sdk = document.documentElement.getAttribute('data-egodact-sdk') || '';
+    } catch (error) {}
+    if (!version && hostInfo) version = hostInfo.version || '';
+    if (!sdk && hostInfo) sdk = hostInfo.sdk || '';
+    return { version: version, sdk: sdk };
+  }
+
   function hostReport() {
     var methods = ['registerAddon', 'registerMenu', 'registerHamburger', 'registerButton', 'registerGame', 'registerSidebarPanel', 'registerShortcut', 'onOpen', 'onShortcut', 'openModal', 'storage', 'toast', 'getChallenges', 'onThemeChange', 'setLearningMode'];
     var lines = ['Egodact Developer Tools ' + ADDON_VERSION, 'URL: ' + location.href, '', 'SDK methods:'];
     methods.forEach(function (name) {
       lines.push((typeof client[name] === 'function' ? '[x] ' : '[ ] ') + name);
     });
+    var hv = hostVersionInfo();
+    lines.push('', 'Host: ' + (hv.version ? 'v' + hv.version + (hv.sdk ? ' (SDK ' + hv.sdk + ')' : '') : 'versie onbekend'));
     lines.push('', 'Theme variables:');
     themeVars().forEach(function (item) { lines.push(item.name + ': ' + item.value); });
     return lines.join('\n');
@@ -671,6 +759,10 @@
     html += '<div>SDK client</div><div class="' + (client ? 'egd-dev-ok' : 'egd-dev-bad') + '">' + (client ? 'aanwezig' : 'ontbreekt') + '</div>';
     html += '<div>Host library</div><div class="' + (L ? 'egd-dev-ok' : 'egd-dev-bad') + '">' + (L ? 'aanwezig' : 'ontbreekt') + '</div>';
     html += '<div>Verplichte API</div><div class="' + (missing.length ? 'egd-dev-bad' : 'egd-dev-ok') + '">' + (missing.length ? 'mist: ' + missing.join(', ') : 'compleet') + '</div>';
+    var hv = hostVersionInfo();
+    html += '<div>Host-extensie</div><div' + (hv.version ? '' : ' class="egd-dev-warn"') + '>' +
+      (hv.version ? 'v' + esc(hv.version) + (hv.sdk ? ' · SDK ' + esc(hv.sdk) : '') : 'onbekend (host stuurt geen versie mee)') + '</div>';
+    html += '<div>host:ready</div><div>' + (hostReadyAt ? Math.round(hostReadyAt) + ' ms na navigatie' : 'niet gezien') + '</div>';
     html += '<div>Pagina</div><div>' + esc(location.href) + '</div>';
     html += '</div>';
 
@@ -987,6 +1079,274 @@
         '  }'
     };
     return snippets[kind] || snippets.hamburger;
+  }
+
+  // ------------------------------------------------------------
+  // timing
+  // ------------------------------------------------------------
+  function renderTiming(root) {
+    var list = root.querySelector('#egd-dev-timing-list');
+    var summary = root.querySelector('#egd-dev-timing-summary');
+    if (!list) return;
+    var keys = Object.keys(registry).filter(function (id) { return id.charAt(0) !== '('; });
+    keys.sort(function (a, b) {
+      var av = registry[a].stats ? registry[a].stats.firstMs : null;
+      var bv = registry[b].stats ? registry[b].stats.firstMs : null;
+      if (av == null && bv == null) return a.localeCompare(b);
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return av - bv;
+    });
+    if (summary) {
+      var hv = hostVersionInfo();
+      var hostText = hv.version
+        ? 'host v' + hv.version + (hv.sdk ? ' · SDK ' + hv.sdk : '')
+        : 'hostversie onbekend';
+      summary.textContent = keys.length + ' add-ons · ' + hostText +
+        (hostReadyAt ? ' · host:ready @ ' + Math.round(hostReadyAt) + ' ms' : '');
+    }
+    list.textContent = '';
+    if (!keys.length) {
+      var empty = document.createElement('div');
+      empty.className = 'egd-dev-empty';
+      empty.textContent = 'Nog geen add-on-registraties gemeten.';
+      list.appendChild(empty);
+      return;
+    }
+    var now = performance.now();
+    keys.forEach(function (id) {
+      var stats = registry[id].stats || {};
+      var addon = registry[id].addon || {};
+      var slow = stats.firstMs != null && stats.firstMs > 2000;
+      var card = document.createElement('div');
+      card.className = 'egd-dev-card' + (slow ? ' warn' : '');
+      var head = document.createElement('div');
+      head.className = 'egd-dev-head';
+      var title = document.createElement('span');
+      title.textContent = (addon.name || '(naam onbekend)') + ' ';
+      var idSpan = document.createElement('span');
+      idSpan.className = 'egd-dev-muted';
+      idSpan.textContent = id;
+      title.appendChild(idSpan);
+      var time = document.createElement('span');
+      time.className = slow ? 'egd-dev-warn' : 'egd-dev-ok';
+      time.textContent = stats.firstMs != null ? Math.round(stats.firstMs) + ' ms' : 'niet gemeten';
+      head.appendChild(title);
+      head.appendChild(time);
+      card.appendChild(head);
+      var meta = document.createElement('div');
+      meta.className = 'egd-dev-muted';
+      var bits = ['registraties: ' + (stats.registers || 0), 'opens: ' + (stats.opens || 0), 'events: ' + (stats.events || 0)];
+      if (stats.lastMs != null) bits.push('laatste activiteit: ' + Math.max(0, Math.round((now - stats.lastMs) / 1000)) + 's geleden');
+      meta.textContent = bits.join(' · ');
+      card.appendChild(meta);
+      list.appendChild(card);
+    });
+  }
+
+  // ------------------------------------------------------------
+  // theme tester
+  // ------------------------------------------------------------
+  function renderTheme(root) {
+    var list = root.querySelector('#egd-dev-theme-list');
+    if (!list) return;
+    var vars = themeVars();
+    if (!themeBaseline) {
+      themeBaseline = {};
+      vars.forEach(function (item) { themeBaseline[item.name] = item.value; });
+    }
+    list.textContent = '';
+    if (!vars.length) {
+      var empty = document.createElement('div');
+      empty.className = 'egd-dev-empty';
+      empty.textContent = 'Geen --egd-* variabelen gevonden.';
+      list.appendChild(empty);
+      return;
+    }
+    vars.forEach(function (item) {
+      var card = document.createElement('div');
+      card.className = 'egd-dev-card';
+      var head = document.createElement('div');
+      head.className = 'egd-dev-head';
+      var name = document.createElement('span');
+      name.textContent = item.name;
+      var swatch = document.createElement('span');
+      swatch.className = 'egd-dev-swatch';
+      swatch.style.cssText = 'display:inline-block;width:22px;height:22px;border-radius:4px;border:1px solid #777;background:' + item.value;
+      head.appendChild(name);
+      head.appendChild(swatch);
+      card.appendChild(head);
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.value = item.value;
+      input.spellcheck = false;
+      input.setAttribute('data-theme-var', item.name);
+      input.style.width = '100%';
+      input.style.boxSizing = 'border-box';
+      card.appendChild(input);
+      list.appendChild(card);
+    });
+  }
+
+  function applyThemeVar(input) {
+    var name = input.getAttribute('data-theme-var');
+    if (!name) return;
+    var value = input.value;
+    try { document.documentElement.style.setProperty(name, value); } catch (error) {}
+    var card = input.closest('.egd-dev-card');
+    var swatch = card && card.querySelector('.egd-dev-swatch');
+    if (swatch) swatch.style.background = value;
+  }
+
+  function resetThemeVars(root) {
+    if (themeBaseline) {
+      Object.keys(themeBaseline).forEach(function (name) {
+        try { document.documentElement.style.removeProperty(name); } catch (error) {}
+      });
+    }
+    themeBaseline = null;
+    renderTheme(root);
+  }
+
+  function themeCss() {
+    return ':root {\n' + themeVars().map(function (item) {
+      return '  ' + item.name + ': ' + item.value + ';';
+    }).join('\n') + '\n}';
+  }
+
+  // ------------------------------------------------------------
+  // marketplace lookup
+  // ------------------------------------------------------------
+  function marketplaceRegistryUrl() {
+    return AUTH_ORIGIN + '/Egodact_addon_marketplace/registry.json?ts=' + Date.now();
+  }
+
+  function fetchText(url) {
+    return new Promise(function (resolve, reject) {
+      function direct() {
+        try {
+          fetch(url).then(function (response) {
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            return response.text();
+          }).then(resolve).catch(reject);
+        } catch (error) { reject(error); }
+      }
+      try {
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+          chrome.runtime.sendMessage({ type: 'egodact-devtools:fetch', url: url }, function (response) {
+            if (chrome.runtime.lastError || !response) { direct(); return; }
+            if (!response.ok) { reject(new Error(response.error || 'fetch failed')); return; }
+            resolve(response.text);
+          });
+        } else {
+          direct();
+        }
+      } catch (error) { direct(); }
+    });
+  }
+
+  function versionParts(value) {
+    return String(value || '').split(/[^0-9]+/).filter(Boolean).map(Number);
+  }
+
+  function compareVersions(a, b) {
+    var pa = versionParts(a);
+    var pb = versionParts(b);
+    var len = Math.max(pa.length, pb.length);
+    for (var i = 0; i < len; i++) {
+      var x = pa[i] || 0;
+      var y = pb[i] || 0;
+      if (x !== y) return x < y ? -1 : 1;
+    }
+    return 0;
+  }
+
+  function renderMarketplace(root) {
+    var list = root.querySelector('#egd-dev-market-list');
+    var status = root.querySelector('#egd-dev-market-status');
+    if (!list || !status) return;
+    if (!marketplaceCache) {
+      if (!marketplaceLoading) {
+        marketplaceLoading = true;
+        status.textContent = 'laden...';
+        fetchText(marketplaceRegistryUrl()).then(function (text) {
+          marketplaceCache = JSON.parse(text);
+          marketplaceLoading = false;
+          var r = activeBackdrop && activeBackdrop.querySelector('#egd-dev-root');
+          if (r) renderMarketplace(r);
+        }).catch(function (error) {
+          marketplaceLoading = false;
+          status.textContent = 'kon registry.json niet laden: ' + error.message;
+        });
+      }
+      list.innerHTML = '<div class="egd-dev-empty">Marketplace-registry laden...</div>';
+      return;
+    }
+    var addons = Array.isArray(marketplaceCache.addons) ? marketplaceCache.addons : [];
+    var byId = {};
+    addons.forEach(function (addon) { byId[addon.id] = addon; });
+    var locals = Object.keys(registry).filter(function (id) { return id.charAt(0) !== '('; });
+    status.textContent = locals.length + ' lokaal · ' + addons.length + ' in marketplace';
+    list.textContent = '';
+    if (!locals.length) {
+      var empty = document.createElement('div');
+      empty.className = 'egd-dev-empty';
+      empty.textContent = 'Geen add-ons op deze pagina gevonden om te vergelijken.';
+      list.appendChild(empty);
+    }
+    locals.forEach(function (id) {
+      var local = registry[id].addon || {};
+      var market = byId[id];
+      var comparison = market ? compareVersions(local.version, market.version) : -1;
+      var card = document.createElement('div');
+      card.className = 'egd-dev-card' + (!market || comparison < 0 ? ' warn' : '');
+      var head = document.createElement('div');
+      head.className = 'egd-dev-head';
+      var title = document.createElement('span');
+      title.textContent = (local.name || id) + ' ';
+      var idSpan = document.createElement('span');
+      idSpan.className = 'egd-dev-muted';
+      idSpan.textContent = id;
+      title.appendChild(idSpan);
+      var state = document.createElement('span');
+      if (!market) {
+        state.className = 'egd-dev-warn';
+        state.textContent = 'niet in marketplace';
+      } else if (comparison < 0) {
+        state.className = 'egd-dev-warn';
+        state.textContent = 'update: v' + market.version;
+      } else if (comparison > 0) {
+        state.className = 'egd-dev-muted';
+        state.textContent = 'lokaal nieuwer';
+      } else {
+        state.className = 'egd-dev-ok';
+        state.textContent = 'actueel';
+      }
+      head.appendChild(title);
+      head.appendChild(state);
+      card.appendChild(head);
+      var meta = document.createElement('div');
+      meta.className = 'egd-dev-muted';
+      var bits = ['lokaal: v' + (local.version || '?')];
+      if (market) bits.push('marketplace: v' + market.version + (market.verified ? ' · verified' : ''));
+      meta.textContent = bits.join(' · ');
+      card.appendChild(meta);
+      list.appendChild(card);
+    });
+    var missing = addons.filter(function (addon) { return !registry[addon.id]; });
+    if (missing.length) {
+      var extra = document.createElement('details');
+      var summary = document.createElement('summary');
+      summary.className = 'egd-dev-muted';
+      summary.textContent = missing.length + ' marketplace-addons niet op deze pagina';
+      var body = document.createElement('div');
+      body.className = 'egd-dev-muted';
+      body.style.whiteSpace = 'pre-wrap';
+      body.textContent = missing.map(function (addon) { return addon.name + ' (v' + addon.version + ')'; }).join('\n');
+      extra.appendChild(summary);
+      extra.appendChild(body);
+      list.appendChild(extra);
+    }
   }
 
   // ------------------------------------------------------------
