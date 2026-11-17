@@ -7,7 +7,7 @@
 
   var ADDON_ID = 'egodact-developer-tools';
   var MENU_ID = ADDON_ID + '-menu';
-  var ADDON_VERSION = '0.3.0';
+  var ADDON_VERSION = '0.3.1';
   var AUTH_ORIGIN = 'https://hoggie-homerserver.github.io';
   var AUTH_URL = AUTH_ORIGIN + '/Egodact_addon_marketplace/developer-auth.html';
   var PORTAL_URL = AUTH_ORIGIN + '/Egodact_addon_marketplace/portal.html';
@@ -710,13 +710,25 @@
   function hostVersionInfo() {
     var version = '';
     var sdk = '';
+    var seen = false;
     try {
-      version = document.documentElement.getAttribute('data-egodact-version') || '';
-      sdk = document.documentElement.getAttribute('data-egodact-sdk') || '';
+      var root = document.documentElement;
+      version = root.getAttribute('data-egodact-version') || '';
+      sdk = root.getAttribute('data-egodact-sdk') || '';
+      // De host-extensie zet dit attribuut al sinds v3.10; zo weten we of hij
+      // draait maar te oud is, in plaats van helemaal afwezig.
+      seen = !!root.getAttribute('data-egodact-thema');
     } catch (error) {}
     if (!version && hostInfo) version = hostInfo.version || '';
     if (!sdk && hostInfo) sdk = hostInfo.sdk || '';
-    return { version: version, sdk: sdk };
+    return { version: version, sdk: sdk, seen: seen };
+  }
+
+  function hostVersionText(hv) {
+    if (hv.version) return 'v' + hv.version + (hv.sdk ? ' · SDK ' + hv.sdk : '');
+    return hv.seen
+      ? 'onbekend — host draait wel, maar is ouder dan 3.11.1 (herlaad de extensie)'
+      : 'onbekend — host-extensie niet actief of niet herladen (min. 3.11.1)';
   }
 
   function hostReport() {
@@ -726,7 +738,7 @@
       lines.push((typeof client[name] === 'function' ? '[x] ' : '[ ] ') + name);
     });
     var hv = hostVersionInfo();
-    lines.push('', 'Host: ' + (hv.version ? 'v' + hv.version + (hv.sdk ? ' (SDK ' + hv.sdk + ')' : '') : 'versie onbekend'));
+    lines.push('', 'Host: ' + hostVersionText(hv));
     lines.push('', 'Theme variables:');
     themeVars().forEach(function (item) { lines.push(item.name + ': ' + item.value); });
     return lines.join('\n');
@@ -761,7 +773,7 @@
     html += '<div>Verplichte API</div><div class="' + (missing.length ? 'egd-dev-bad' : 'egd-dev-ok') + '">' + (missing.length ? 'mist: ' + missing.join(', ') : 'compleet') + '</div>';
     var hv = hostVersionInfo();
     html += '<div>Host-extensie</div><div' + (hv.version ? '' : ' class="egd-dev-warn"') + '>' +
-      (hv.version ? 'v' + esc(hv.version) + (hv.sdk ? ' · SDK ' + esc(hv.sdk) : '') : 'onbekend (host stuurt geen versie mee)') + '</div>';
+      esc(hostVersionText(hv)) + '</div>';
     html += '<div>host:ready</div><div>' + (hostReadyAt ? Math.round(hostReadyAt) + ' ms na navigatie' : 'niet gezien') + '</div>';
     html += '<div>Pagina</div><div>' + esc(location.href) + '</div>';
     html += '</div>';
@@ -1101,7 +1113,7 @@
       var hv = hostVersionInfo();
       var hostText = hv.version
         ? 'host v' + hv.version + (hv.sdk ? ' · SDK ' + hv.sdk : '')
-        : 'hostversie onbekend';
+        : (hv.seen ? 'hostversie onbekend (extensie te oud)' : 'hostversie onbekend');
       summary.textContent = keys.length + ' add-ons · ' + hostText +
         (hostReadyAt ? ' · host:ready @ ' + Math.round(hostReadyAt) + ' ms' : '');
     }
