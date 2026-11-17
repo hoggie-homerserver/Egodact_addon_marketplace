@@ -1,6 +1,6 @@
 # Egodact Developer Tools
 
-A standalone Egodact add-on for marketplace developers (v0.2.0). It adds a gated developer workspace to Egodact with a live SDK event inspector, a registration registry, an SDK/host capability check, a storage browser, a manifest and file-list validator, and a starter kit + snippet generator.
+A standalone Egodact add-on for marketplace developers (v0.2.1). It adds a gated developer workspace to Egodact with a live SDK event inspector, a registration registry, an SDK/host capability check, a storage browser, a manifest and file-list validator, and a starter kit + snippet generator.
 
 ## Install
 

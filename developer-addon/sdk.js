@@ -82,6 +82,24 @@
 
     const listeners = Object.create(null);
     const shortcutListeners = Object.create(null);
+    const challengeListeners = [];
+    const themeListeners = [];
+
+    document.addEventListener('egodact:challenges:changed', function (event) {
+        const detail = (event && event.detail) || {};
+        let list = [];
+        try { list = detail.json ? JSON.parse(detail.json) : []; } catch (err) {}
+        challengeListeners.forEach(function (cb) {
+            try { cb(list); } catch (err) { console.error(err); }
+        });
+    });
+
+    document.addEventListener('egodact:theme:changed', function (event) {
+        const detail = (event && event.detail) || {};
+        themeListeners.forEach(function (cb) {
+            try { cb(detail); } catch (err) { console.error(err); }
+        });
+    });
 
     document.addEventListener('egodact:addon:open', function (event) {
         const id = (event && event.detail && event.detail.id) || null;
@@ -126,6 +144,35 @@
                 }
             };
         },
+        // Challenges van het Egodact-bord (zelfde protocol als de host-SDK).
+        getChallenges: function (force) {
+            return new Promise(function (resolve) {
+                const requestId = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                function handler(event) {
+                    const detail = (event && event.detail) || {};
+                    if (detail.requestId !== requestId) return;
+                    document.removeEventListener('egodact:addon:challenges:response', handler);
+                    let list = [];
+                    try { list = detail.json ? JSON.parse(detail.json) : []; } catch (err) {}
+                    resolve(list);
+                }
+                document.addEventListener('egodact:addon:challenges:response', handler);
+                dispatch('challenges:request', { requestId: requestId, force: !!force });
+                setTimeout(function () {
+                    document.removeEventListener('egodact:addon:challenges:response', handler);
+                    resolve([]);
+                }, 8000);
+            });
+        },
+
+        onChallengesChanged: function (cb) {
+            if (typeof cb === 'function') challengeListeners.push(cb);
+        },
+
+        onThemeChange: function (cb) {
+            if (typeof cb === 'function') themeListeners.push(cb);
+        },
+
         registerShortcut: function (meta) { dispatch('shortcut', meta || {}); },
         unregisterShortcut: function (id) { dispatch('unregister-shortcut', { id: id }); },
         setLearningMode: function (v) { dispatch('learning-mode', { enabled: !!v }); },

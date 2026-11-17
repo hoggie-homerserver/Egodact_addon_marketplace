@@ -7,7 +7,7 @@
 
   var ADDON_ID = 'egodact-developer-tools';
   var MENU_ID = ADDON_ID + '-menu';
-  var ADDON_VERSION = '0.2.0';
+  var ADDON_VERSION = '0.2.1';
   var AUTH_ORIGIN = 'https://hoggie-homerserver.github.io';
   var AUTH_URL = AUTH_ORIGIN + '/Egodact_addon_marketplace/developer-auth.html';
   var PORTAL_URL = AUTH_ORIGIN + '/Egodact_addon_marketplace/portal.html';
