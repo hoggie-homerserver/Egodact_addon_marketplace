@@ -16,16 +16,48 @@
   var activeBackdrop = null;
   var eventsHooked = false;
 
-  client.registerAddon({
-    id: ADDON_ID,
-    name: 'Egodact Developer Tools',
-    version: '0.1.1',
-    description: 'Tools for building, checking, and debugging Egodact add-ons.',
-    author: 'Egodact Marketplace'
-  });
-  client.registerHamburger({ addonId: ADDON_ID, id: MENU_ID, title: 'Developer Tools', icon: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-2.5 2.5-3.5-3.5z"/></svg>' });
-  client.onOpen(MENU_ID, openTools);
-  window.addEventListener('message', handleAuthMessage);
+  var MENU_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-2.5 2.5-3.5-3.5z"/></svg>';
+
+  function notify(message, type) {
+    try {
+      if (client && typeof client.toast === 'function') { client.toast(message, { type: type || 'info' }); return; }
+    } catch (error) {}
+    if (type === 'error') console.warn('[Egodact Developer Tools] ' + message);
+  }
+
+  // Registration is defensive on purpose: an older SDK build without
+  // registerHamburger used to throw here and silently kill the whole add-on.
+  try {
+    client.registerAddon({
+      id: ADDON_ID,
+      name: 'Egodact Developer Tools',
+      version: '0.1.2',
+      description: 'Tools for building, checking, and debugging Egodact add-ons.',
+      author: 'Egodact Marketplace'
+    });
+  } catch (error) {
+    console.error('[Egodact Developer Tools] registerAddon failed:', error);
+  }
+
+  try {
+    var menuMeta = { addonId: ADDON_ID, id: MENU_ID, title: 'Developer Tools', icon: MENU_ICON, order: '90' };
+    if (typeof client.registerHamburger === 'function') client.registerHamburger(menuMeta);
+    else client.registerMenu(menuMeta);
+  } catch (error) {
+    console.error('[Egodact Developer Tools] menu registration failed:', error);
+  }
+
+  try {
+    client.onOpen(MENU_ID, openTools);
+  } catch (error) {
+    console.error('[Egodact Developer Tools] onOpen failed:', error);
+  }
+
+  try {
+    window.addEventListener('message', handleAuthMessage);
+  } catch (error) {
+    console.error('[Egodact Developer Tools] message listener failed:', error);
+  }
 
   function shellHtml() {
     return '<div id="egd-dev-root" style="font-family:Arial,sans-serif;min-height:380px;">' +
@@ -375,10 +407,10 @@
   function copyText(text, successMessage) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(function () {
-        client.toast(successMessage, { type: 'success' });
-      }).catch(function () { client.toast('Clipboard access was blocked.', { type: 'error' }); });
+        notify(successMessage, 'success');
+      }).catch(function () { notify('Clipboard access was blocked.', 'error'); });
     } else {
-      client.toast('Clipboard is unavailable in this browser.', { type: 'error' });
+      notify('Clipboard is unavailable in this browser.', 'error');
     }
   }
 })();

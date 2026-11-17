@@ -105,6 +105,7 @@
         registerButton: function (meta) { dispatch('button', meta || {}); },
         registerGame: function (meta) { dispatch('game', meta || {}); },
         registerSidebarPanel: function (meta) { dispatch('sidebar-panel', meta || {}); },
+        registerHamburger: function (meta) { dispatch('hamburger', meta || {}); },
         registerShortcut: function (meta) { dispatch('shortcut', meta || {}); },
         unregisterShortcut: function (id) { dispatch('unregister-shortcut', { id: id }); },
         setLearningMode: function (v) { dispatch('learning-mode', { enabled: !!v }); },
@@ -165,6 +166,9 @@
             modal.querySelector('#egodact-modal-sluiten').addEventListener('click', sluit);
             backdrop.addEventListener('click', function (e) { if (e.target === backdrop) sluit(); });
             return backdrop;
+        },
+        toast: function (message, options) {
+            dispatch('toast', { message: message, options: options || {} });
         },
         escapeHtml: function (t) {
             return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
