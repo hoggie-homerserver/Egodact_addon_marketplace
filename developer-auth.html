@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Egodact Developer Tools sign in</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#242424;color:#f5f5f5;font:14px Arial,sans-serif}
+    main{width:min(440px,calc(100vw - 32px));padding:24px;background:#333;border:1px solid #555;border-radius:10px}
+    h1{font-size:20px;margin:0 0 8px}p{color:#bbb;line-height:1.5}label{display:block;margin:12px 0 5px;color:#ccc;font-size:12px}
+    input,button{width:100%;padding:10px;border-radius:6px;border:1px solid #555;background:#242424;color:#fff;font:inherit}
+    button{margin-top:12px;background:#90caf9;color:#123;cursor:pointer;font-weight:bold;border:0}
+    button.secondary{background:transparent;color:#f5f5f5;border:1px solid #666}
+    a{color:#90caf9}#status{min-height:20px;font-size:12px;color:#ffb4ab;margin-top:10px}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Sign in to Developer Tools</h1>
+    <p>Use the same account as the Egodact Marketplace Developer Portal.</p>
+    <div id="form">
+      <label for="email">Email</label><input id="email" type="email" autocomplete="email">
+      <label for="password">Password</label><input id="password" type="password" autocomplete="current-password">
+      <button id="emailLogin" type="button">Sign in with email</button>
+      <button id="googleLogin" class="secondary" type="button">Continue with Google</button>
+      <div id="status" role="status"></div>
+      <p>Need an account? <a href="portal.html" target="_blank" rel="noopener">Create one in the Developer Portal</a>.</p>
+    </div>
+    <div id="done" hidden>Signed in. You can close this window.</div>
+  </main>
+  <script src="firebase-app-compat.js"></script>
+  <script src="firebase-auth-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>
+  (function(){
+    var status=document.getElementById('status');
+    var form=document.getElementById('form');
+    var done=document.getElementById('done');
+    var config=window.EgodactMarketplaceFirebase && window.EgodactMarketplaceFirebase.config;
+    var appName='egodact-developer-auth';
+    try {
+      var app=firebase.apps.find(function(a){return a.name===appName;}) || firebase.initializeApp(config,appName);
+      var auth=firebase.auth(app);
+      function finish(user){
+        if(!user || !window.opener){ if(!window.opener) status.textContent='Open this sign-in window from Developer Tools in Egodact.'; return; }
+        user.getIdToken(true).then(function(idToken){
+          window.opener.postMessage({type:'egodact-developer-auth',idToken:idToken},'https://app.egodact.com');
+          form.hidden=true;
+          done.hidden=false;
+          setTimeout(function(){window.close();},500);
+        }).catch(function(error){status.textContent=error.message || 'Could not complete sign-in.';});
+      }
+      auth.onAuthStateChanged(function(user){if(user) finish(user);});
+      document.getElementById('emailLogin').addEventListener('click',function(){
+        status.textContent='';
+        auth.signInWithEmailAndPassword(document.getElementById('email').value.trim(),document.getElementById('password').value)
+          .catch(function(error){status.textContent=error.message || 'Sign-in failed.';});
+      });
+      document.getElementById('googleLogin').addEventListener('click',function(){
+        status.textContent='';
+        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+          .catch(function(error){status.textContent=error.message || 'Google sign-in failed.';});
+      });
+    } catch(error){status.textContent=error.message || 'Marketplace sign-in is unavailable.';}
+  })();
+  </script>
+</body>
+</html>

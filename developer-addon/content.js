@@ -3,15 +3,15 @@
 
   var client = window.EgodactAddonClient;
   var L = window.EgodactAddonLib;
-  var cfg = (window.EgodactDeveloperConfig || {}).firebase || {};
   if (!client || !L) return;
 
   var ADDON_ID = 'egodact-developer-tools';
   var MENU_ID = ADDON_ID + '-menu';
-  var BUTTON_ID = ADDON_ID + '-button';
-  var auth = null;
-  var authReady = null;
   var currentUser = null;
+  var authWindow = null;
+  var AUTH_ORIGIN = 'https://hoggie-homerserver.github.io';
+  var AUTH_URL = AUTH_ORIGIN + '/Egodact_addon_marketplace/developer-auth.html';
+  var PROJECT_ID = 'egodact-addon-portal';
   var events = [];
   var activeBackdrop = null;
   var eventsHooked = false;
@@ -19,43 +19,13 @@
   client.registerAddon({
     id: ADDON_ID,
     name: 'Egodact Developer Tools',
-    version: '0.1.0',
+    version: '0.1.1',
     description: 'Tools for building, checking, and debugging Egodact add-ons.',
     author: 'Egodact Marketplace'
   });
-  client.registerMenu({ addonId: ADDON_ID, id: MENU_ID, title: 'Developer Tools', icon: '🛠️' });
-  client.registerButton({ addonId: ADDON_ID, id: BUTTON_ID, title: 'Developer Tools', icon: '🛠️', position: 'header' });
+  client.registerHamburger({ addonId: ADDON_ID, id: MENU_ID, title: 'Developer Tools', icon: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-2.5 2.5-3.5-3.5z"/></svg>' });
   client.onOpen(MENU_ID, openTools);
-  client.onOpen(BUTTON_ID, openTools);
-
-  function initAuth() {
-    if (authReady) return authReady;
-    authReady = Promise.resolve().then(function () {
-      if (!window.firebase || !cfg.apiKey || !cfg.projectId) throw new Error('Marketplace login is not configured.');
-      var name = 'egodact-developer-tools';
-      var app = window.firebase.apps.find(function (item) { return item.name === name; });
-      app = app || window.firebase.initializeApp(cfg, name);
-      auth = window.firebase.auth(app);
-      return new Promise(function (resolve) {
-        var firstState = true;
-        auth.onAuthStateChanged(function (user) {
-          currentUser = user || null;
-          if (firstState) {
-            firstState = false;
-            resolve(auth);
-          }
-          var root = activeBackdrop && activeBackdrop.querySelector('#egd-dev-root');
-          if (root) renderAuth(root);
-        }, function () {
-          if (firstState) {
-            firstState = false;
-            resolve(auth);
-          }
-        });
-      });
-    });
-    return authReady;
-  }
+  window.addEventListener('message', handleAuthMessage);
 
   function shellHtml() {
     return '<div id="egd-dev-root" style="font-family:Arial,sans-serif;min-height:380px;">' +
@@ -108,9 +78,7 @@
     var root = activeBackdrop && activeBackdrop.querySelector('#egd-dev-root');
     if (!root) return;
     bindWorkspace(root);
-    initAuth().then(function () { renderAuth(root); }).catch(function (error) {
-      showAuthError(root, error && error.message ? error.message : 'Could not connect to marketplace login.');
-    });
+    renderAuth(root);
   }
 
   function bindWorkspace(root) {
@@ -118,7 +86,9 @@
       button.addEventListener('click', function () { showPanel(root, button.getAttribute('data-tab')); });
     });
     root.querySelector('#egd-dev-signout').addEventListener('click', function () {
-      if (auth) auth.signOut();
+      currentUser = null;
+      authWindow = null;
+      renderAuth(root);
     });
     root.querySelector('#egd-dev-clear').addEventListener('click', function () {
       events = [];
@@ -148,19 +118,10 @@
       authPanel.innerHTML =
         '<h3 style="margin:0 0 6px;">Sign in with your marketplace developer account</h3>' +
         '<p style="font-size:12px;opacity:.75;">The tools are available to signed-in Developer Portal accounts.</p>' +
-        '<label style="display:block;font-size:12px;margin:8px 0 4px;">Email</label><input id="egd-dev-email" type="email" autocomplete="email" style="width:100%;box-sizing:border-box;padding:8px;">' +
-        '<label style="display:block;font-size:12px;margin:8px 0 4px;">Password</label><input id="egd-dev-password" type="password" autocomplete="current-password" style="width:100%;box-sizing:border-box;padding:8px;">' +
-        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><button id="egd-dev-login" type="button">Sign in</button><button id="egd-dev-google" type="button">Continue with Google</button></div>' +
+        '<button id="egd-dev-login" type="button" style="padding:8px 12px;margin-top:8px;">Sign in with marketplace</button>' +
         '<div id="egd-dev-auth-error" role="alert" style="color:#e57373;font-size:12px;margin-top:8px;"></div>' +
         '<p style="font-size:12px;margin-top:10px;">Need an account? <a href="https://hoggie-homerserver.github.io/Egodact_addon_marketplace/portal.html" target="_blank" rel="noopener">Create one in the Developer Portal</a>.</p>';
-      root.querySelector('#egd-dev-login').addEventListener('click', function () {
-        var email = root.querySelector('#egd-dev-email').value.trim();
-        var password = root.querySelector('#egd-dev-password').value;
-        auth.signInWithEmailAndPassword(email, password).catch(function (error) { showAuthError(root, authError(error)); });
-      });
-      root.querySelector('#egd-dev-google').addEventListener('click', function () {
-        auth.signInWithPopup(new window.firebase.auth.GoogleAuthProvider()).catch(function (error) { showAuthError(root, authError(error)); });
-      });
+      root.querySelector('#egd-dev-login').addEventListener('click', function () { beginLogin(root); });
       return;
     }
     authPanel.style.display = 'none';
@@ -186,12 +147,37 @@
     else panel.textContent = message;
   }
 
-  function authError(error) {
-    var code = error && error.code;
-    if (code === 'auth/invalid-email') return 'Enter a valid email address.';
-    if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') return 'Email or password did not match.';
-    if (code === 'auth/popup-blocked') return 'Allow the sign-in popup and try again.';
-    return (error && error.message) || 'Sign-in failed.';
+  function beginLogin(root) {
+    try {
+      authWindow = window.open(AUTH_URL, 'egodact-developer-auth', 'popup,width=520,height=700');
+      if (!authWindow) showAuthError(root, 'Your browser blocked the sign-in popup. Allow pop-ups for app.egodact.com, then try again.');
+    } catch (error) {
+      showAuthError(root, 'Could not open marketplace sign-in. Allow pop-ups for app.egodact.com and try again.');
+    }
+  }
+
+  function handleAuthMessage(event) {
+    if (!authWindow || event.origin !== AUTH_ORIGIN || event.source !== authWindow) return;
+    var data = event.data || {};
+    if (data.type !== 'egodact-developer-auth' || typeof data.idToken !== 'string') return;
+    try {
+      var parts = data.idToken.split('.');
+      if (parts.length !== 3) throw new Error('Invalid token.');
+      var payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (payload.length % 4) payload += '=';
+      var claims = JSON.parse(atob(payload));
+      if (claims.aud !== PROJECT_ID || claims.iss !== 'https://securetoken.google.com/' + PROJECT_ID || Number(claims.exp) * 1000 <= Date.now()) {
+        throw new Error('Marketplace sign-in expired. Please try again.');
+      }
+      currentUser = { email: claims.email || 'Marketplace developer account' };
+      authWindow = null;
+      var root = activeBackdrop && activeBackdrop.querySelector('#egd-dev-root');
+      if (root) renderAuth(root);
+    } catch (error) {
+      authWindow = null;
+      var activeRoot = activeBackdrop && activeBackdrop.querySelector('#egd-dev-root');
+      if (activeRoot) showAuthError(activeRoot, error.message || 'Marketplace sign-in failed. Please try again.');
+    }
   }
 
   function showPanel(root, name) {
